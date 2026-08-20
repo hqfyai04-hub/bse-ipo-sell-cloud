@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: bse-ipo-sell-cloud
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_ACCESS_TOKEN
+        sync: false
