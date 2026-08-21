@@ -1,0 +1,17 @@
+{
+  "appId": "com.hqfyai.bseiposell",
+  "appName": "北交所新股卖出助手",
+  "webDir": "www",
+  "backgroundColor": "#07111fff",
+  "loggingBehavior": "debug",
+  "android": {
+    "backgroundColor": "#07111fff",
+    "zoomEnabled": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK"
+    }
+  }
+}

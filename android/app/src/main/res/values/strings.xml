@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">北交所新股卖出助手</string>
+    <string name="title_activity_main">北交所新股卖出助手</string>
+    <string name="package_name">com.hqfyai.bseiposell</string>
+    <string name="custom_url_scheme">com.hqfyai.bseiposell</string>
+</resources>

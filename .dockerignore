@@ -5,3 +5,9 @@ __pycache__
 *.py[cod]
 .env
 tests
+node_modules
+www
+android
+scripts
+package*.json
+capacitor.config.json

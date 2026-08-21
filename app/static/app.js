@@ -1,5 +1,10 @@
 const $ = (id) => document.getElementById(id);
 const state = { timer: null, busy: false, code: "", position: "", lastKey: "", history: [] };
+const API_BASE_URL = String(window.APP_CONFIG?.API_BASE_URL || "").replace(/\/+$/, "");
+
+function apiUrl(path) {
+  return `${API_BASE_URL}${path}`;
+}
 
 function number(value, digits = 2) {
   return Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : "--";
@@ -107,7 +112,7 @@ async function refresh() {
   if (state.position) params.set("position", state.position);
   const token = localStorage.getItem("bseAccessToken") || "";
   try {
-    const response = await fetch(`/api/analyze?${params}`, {
+    const response = await fetch(apiUrl(`/api/analyze?${params}`), {
       cache: "no-store",
       headers: token ? { "X-App-Token": token } : {},
     });
@@ -156,3 +161,13 @@ if (initialCode.length === 6) {
   $("code").value = initialCode;
   $("searchForm").requestSubmit();
 }
+
+window.addEventListener("offline", () => {
+  setLive("error", "网络已断开");
+  setError("实时行情需要网络连接；恢复网络后将自动重试。");
+});
+window.addEventListener("online", () => {
+  setError();
+  if (state.code) refresh();
+  else setLive("", "网络已恢复");
+});

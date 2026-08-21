@@ -4,7 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07111f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="北交所卖出助手">
   <title>北交所新股卖出窗口助手</title>
+  <link rel="manifest" href="/static/manifest.webmanifest">
+  <link rel="icon" href="/static/icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
@@ -13,7 +20,10 @@
       <span class="brand-mark">BSE</span>
       <span>新股卖出窗口</span>
     </a>
-    <div class="live-state"><span id="liveDot" class="dot"></span><span id="liveText">未开始</span></div>
+    <div class="header-actions">
+      <button id="installAppBtn" class="install-button" type="button" hidden>安装到手机</button>
+      <div class="live-state"><span id="liveDot" class="dot"></span><span id="liveText">未开始</span></div>
+    </div>
   </header>
 
   <main>
@@ -111,6 +121,8 @@
   </main>
 
   <footer>开源部署版 · 仅用于北交所新股上市首日辅助判断</footer>
+  <script src="/static/app-config.js"></script>
   <script src="/static/app.js" defer></script>
+  <script src="/static/pwa.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="北交所新股卖出助手">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102b45"/>
+      <stop offset="1" stop-color="#07111f"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#4ce2d4"/>
+      <stop offset="1" stop-color="#74a7ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <circle cx="512" cy="512" r="326" fill="none" stroke="#b6d8ec" stroke-opacity=".12" stroke-width="24"/>
+  <path d="M292 710h440" fill="none" stroke="#b6d8ec" stroke-opacity=".22" stroke-width="22" stroke-linecap="round"/>
+  <g stroke="#eff7ff" stroke-width="24" stroke-linecap="round">
+    <path d="M358 610V430"/><rect x="323" y="480" width="70" height="82" rx="14" fill="#ffbf69" stroke="none"/>
+    <path d="M512 628V342"/><rect x="477" y="410" width="70" height="138" rx="14" fill="#4ce2d4" stroke="none"/>
+    <path d="M666 560V292"/><rect x="631" y="360" width="70" height="126" rx="14" fill="#74a7ff" stroke="none"/>
+  </g>
+  <path d="M286 628L434 514l126 56 170-194" fill="none" stroke="url(#line)" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M646 374h88v88" fill="none" stroke="#74a7ff" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

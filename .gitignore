@@ -5,3 +5,10 @@ __pycache__/
 .env
 .coverage
 htmlcov/
+node_modules/
+www/
+*.jks
+*.keystore
+android/.gradle/
+android/local.properties
+android/**/build/

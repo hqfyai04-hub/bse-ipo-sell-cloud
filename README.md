@@ -1,6 +1,6 @@
-# 北交所新股首日卖出窗口助手（云端版）
+# 北交所新股首日卖出窗口助手（云端 + Android）
 
-一个可独立部署的 Web 软件。用户只需输入 6 位证券代码，可选填写持仓股数，服务会自动读取北交所发行资料与公开实时行情，并给出“观察 / 分批 / 全部退出”的可解释提示。
+一个可独立部署的 Web/PWA 软件，并附带可打包成 Android APK 的 Capacitor 工程。用户只需输入 6 位证券代码，可选填写持仓股数，服务会自动读取北交所发行资料与公开实时行情，并给出“观察 / 分批 / 全部退出”的可解释提示。
 
 > 它识别的是当前卖出窗口，不预测全天最高价，不连接券商，也不会自动下单。任何执行必须以券商终端的可成交盘口为准。
 
@@ -11,6 +11,8 @@
 - 腾讯行情为主、东方财富行情自动降级；行情时间戳超过 20 秒时暂停强提示。
 - 服务端保存当日状态：VWAP 持续失守、09:30—09:45 开盘区间、二次突破峰值、临停和复牌保护。
 - 只有持仓股数是可选输入；不填写时只显示卖出百分比。
+- Web 版符合 PWA 安装条件，可从 Android Chrome 直接“安装到手机”。
+- Android APK 内置界面资源，只把实时 API 请求发送到指定的 HTTPS 云端后端。
 
 ## 判断规则（V1）
 
@@ -50,13 +52,45 @@ GitHub Pages 只能托管静态文件，无法运行本项目的 Python 行情�
 4. 在 Render 环境变量中设置随机的 `APP_ACCESS_TOKEN`；不设置则网站公开。
 5. 部署完成后访问 Render 分配的 HTTPS 地址。
 
-Render 不依赖 GitHub Actions，连接仓库后即可构建。仓库在 `deploy/github-actions/` 提供 CI 与镜像发布模板；启用后，每次推送 `main` 都会运行测试和 Docker 构建，创建 `v1.0.0` 之类的 Git tag可把镜像发布到 GitHub Container Registry。
+Render 不依赖 GitHub Actions，连接仓库后即可构建。仓库在 `deploy/github-actions/` 提供 CI、镜像发布和 APK 构建模板；启用后，每次推送 `main` 都会运行测试和 Docker 构建，创建 `v1.1.0` 之类的 Git tag 可把镜像发布到 GitHub Container Registry。
 
-当前 GitHub OAuth 令牌没有 `workflow` scope 时，GitHub 会拒绝直接推送 `.github/workflows`。重新授权后可启用模板：
+## 安装到 Android 手机
 
-```bash
+### 方案一：PWA（最快，不需要 APK）
+
+1. 先把本项目部署到带 HTTPS 的云平台。
+2. 用 Android Chrome 打开部署地址。
+3. 点击页面右上角“安装到手机”；如果按钮未出现，打开 Chrome 菜单并选择“安装应用”或“添加到主屏幕”。
+4. 安装后会像普通 App 一样从桌面全屏启动。界面外壳可离线打开，但实时行情判断必须联网。
+
+PWA 图标、manifest、Service Worker 和安装入口均已包含在服务端静态资源中。
+
+### 方案二：生成 Android APK
+
+APK 只打包本地界面，不把云端访问口令写进安装包。构建前必须先获得已部署后端的 HTTPS 地址：
+
+```powershell
+npm ci
+$env:APP_API_BASE_URL = "https://你的后端地址"
+npm run android:sync
+npm run android:debug
+```
+
+调试安装包输出到：
+
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+本地构建需要 Node.js 22+、JDK 21、Android Studio 与 Android SDK。也可在 GitHub Actions 中手动构建：启用 `deploy/github-actions/android-apk.yml` 后，运行 **Build Android APK**，输入后端 HTTPS 地址，再从该次任务的 Artifacts 下载 `bse-ipo-sell-debug-apk`。
+
+首次打开 App 时，如果云端配置了 `APP_ACCESS_TOKEN`，在页面“访问口令”中输入即可；口令只保存在手机本地。正式对外分发应在 Android Studio 中配置自己的签名，生成签名版 AAB/APK，不能用调试签名上架。
+
+当前 GitHub OAuth 令牌没有 `workflow` scope 时，GitHub 会拒绝直接推送 `.github/workflows`。重新授权后可一次性启用 CI、镜像发布和 APK 构建模板：
+
+```powershell
 gh auth refresh -h github.com -s workflow
-mkdir -p .github/workflows
+New-Item -ItemType Directory -Force .github/workflows
 git mv deploy/github-actions/*.yml .github/workflows/
 git commit -m "Enable GitHub Actions"
 git push
@@ -71,6 +105,8 @@ git push
 | 名称 | 默认值 | 说明 |
 | --- | --- | --- |
 | `APP_ACCESS_TOKEN` | 空 | 可选访问口令；公网部署建议设置 |
+| `APP_ALLOWED_ORIGINS` | 空 | 额外允许调用 API 的网页来源，多个来源用逗号分隔；Android 默认来源已内置 |
+| `APP_API_BASE_URL` | 空 | 仅在构建 Android 时使用，必须是已部署后端的 HTTPS 根地址 |
 | `ENABLE_API_DOCS` | `0` | 设为 `1` 时开放 `/api/docs` |
 | `PORT` | `8000` | 云平台监听端口 |
 

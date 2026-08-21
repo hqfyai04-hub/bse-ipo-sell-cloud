@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -19,12 +20,29 @@ from .strategy import SellWindowEngine
 ROOT = Path(__file__).resolve().parent
 STATIC = ROOT / "static"
 ACCESS_TOKEN = os.getenv("APP_ACCESS_TOKEN", "").strip()
+ALLOWED_ORIGINS = {
+    "https://localhost",
+    "http://localhost",
+    "capacitor://localhost",
+    *(
+        origin.strip().rstrip("/")
+        for origin in os.getenv("APP_ALLOWED_ORIGINS", "").split(",")
+        if origin.strip()
+    ),
+}
 
 app = FastAPI(
     title="北交所新股首日卖出窗口助手",
     version=__version__,
     docs_url="/api/docs" if os.getenv("ENABLE_API_DOCS") == "1" else None,
     redoc_url=None,
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=sorted(ALLOWED_ORIGINS),
+    allow_credentials=False,
+    allow_methods=["GET", "OPTIONS"],
+    allow_headers=["Content-Type", "X-App-Token"],
 )
 market = MarketClient()
 engine = SellWindowEngine()
@@ -68,7 +86,10 @@ async def security_headers(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "same-origin"
-    response.headers["Cache-Control"] = "no-store" if request.url.path.startswith("/api/") else "public, max-age=300"
+    if request.url.path.startswith("/api/") or request.url.path == "/service-worker.js":
+        response.headers["Cache-Control"] = "no-store"
+    else:
+        response.headers["Cache-Control"] = "public, max-age=300"
     return response
 
 
@@ -126,6 +147,13 @@ def analyze(
 @app.get("/")
 def index():
     return FileResponse(STATIC / "index.html")
+
+
+@app.get("/service-worker.js", include_in_schema=False)
+def service_worker():
+    response = FileResponse(STATIC / "service-worker.js", media_type="application/javascript")
+    response.headers["Service-Worker-Allowed"] = "/"
+    return response
 
 
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
