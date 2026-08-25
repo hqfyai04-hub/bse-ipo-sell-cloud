@@ -33,6 +33,13 @@ def test_service_worker_never_caches_live_api():
     assert "networkOnly(event.request)" in worker
 
 
+def test_token_fragment_is_saved_locally_then_removed_from_address():
+    app_script = (STATIC / "app.js").read_text(encoding="utf-8")
+    assert 'launchParams.get("token")' in app_script
+    assert 'localStorage.setItem("bseAccessToken", launchToken)' in app_script
+    assert 'history.replaceState(null, "", `${location.pathname}${location.search}`)' in app_script
+
+
 def test_capacitor_android_configuration_is_current():
     package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
     config = json.loads((ROOT / "capacitor.config.json").read_text(encoding="utf-8"))

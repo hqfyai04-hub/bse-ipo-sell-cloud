@@ -155,6 +155,13 @@ $("saveToken").addEventListener("click", () => {
   if (state.code) refresh();
 });
 
+const launchParams = new URLSearchParams(location.hash.replace(/^#/, ""));
+const launchToken = launchParams.get("token")?.trim() || "";
+if (/^[A-Za-z0-9_-]{12,128}$/.test(launchToken)) {
+  localStorage.setItem("bseAccessToken", launchToken);
+  history.replaceState(null, "", `${location.pathname}${location.search}`);
+}
+
 const initialCode = new URLSearchParams(location.search).get("code")?.replace(/\D/g, "") || "";
 $("accessToken").value = localStorage.getItem("bseAccessToken") || "";
 if (initialCode.length === 6) {

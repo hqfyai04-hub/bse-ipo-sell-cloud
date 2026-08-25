@@ -65,6 +65,8 @@ Render 不依赖 GitHub Actions，连接仓库后即可构建。仓库在 `deplo
 
 PWA 图标、manifest、Service Worker 和安装入口均已包含在服务端静态资源中。
 
+私有部署可使用 `https://你的域名/#token=访问口令` 作为首次访问链接。页面会把口令保存到当前设备，并立即从地址栏移除；URL 片段不会发送到服务器访问日志。
+
 ### 方案二：生成 Android APK
 
 APK 只打包本地界面，不把云端访问口令写进安装包。构建前必须先获得已部署后端的 HTTPS 地址：
