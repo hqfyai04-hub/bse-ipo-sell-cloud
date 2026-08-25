@@ -4,6 +4,27 @@
 
 > 它识别的是当前卖出窗口，不预测全天最高价，不连接券商，也不会自动下单。任何执行必须以券商终端的可成交盘口为准。
 
+## V3.2 完整云端版
+
+2.0.0 起，网页端直接运行本地 V3.2 的完整决策状态机，不再是早期精简规则。已经迁移：
+
+- 9:25 竞价换手与五档订单失衡安全门；
+- 已核验首日流通盘、自定义累计换手、5/30 分钟换手增量；
+- VWAP 持续失守、反抽失败、开盘 15 分钟高点、二次突破与峰值移动保护；
+- 临停/复牌保护、100 股容错/收益优先模式、个股专案和目标价量价确认；
+- 九个固定时点快照、完整判断存档、关键变化标记和 CSV 导出。
+
+云端默认使用腾讯/东方财富公开行情。公开源没有可靠的 9:25 五档盘口，因此相关强信号会保持禁用，不能把低可信数据伪装成 TQ。需要完整盘口时，可在已登录通达信/TQ 的 Windows 电脑上运行可选中转：
+
+```powershell
+python scripts/relay_tq_to_cloud.py --code 920071 `
+  --cloud https://bse-ipo-sell-cloud.onrender.com `
+  --token 你的云端口令 `
+  --local http://127.0.0.1:8765
+```
+
+中转脚本只有在本地接口明确报告 `tqPrimary=true` 时才上传，且云端拒绝超过 60 秒的行情。
+
 ## 与旧版的区别
 
 - 不依赖 Windows、通达信、TdxQuant 或 Cloudflare 临时隧道。
@@ -14,7 +35,7 @@
 - Web 版符合 PWA 安装条件，可从 Android Chrome 直接“安装到手机”。
 - Android APK 内置界面资源，只把实时 API 请求发送到指定的 HTTPS 云端后端。
 
-## 判断规则（V1）
+## 判断规则（V3.2）
 
 - 09:30—09:35：普通波动处于硬保护期，只有首分钟承接严重失败才分批。
 - 守住开盘价和 VWAP：继续观察，不因涨幅大或高换手机械清仓。
@@ -53,6 +74,8 @@ GitHub Pages 只能托管静态文件，无法运行本项目的 Python 行情�
 5. 部署完成后访问 Render 分配的 HTTPS 地址。
 
 Render 不依赖 GitHub Actions，连接仓库后即可构建。仓库在 `deploy/github-actions/` 提供 CI、镜像发布和 APK 构建模板；启用后，每次推送 `main` 都会运行测试和 Docker 构建，创建 `v1.1.0` 之类的 Git tag 可把镜像发布到 GitHub Container Registry。
+
+`render.yaml` 同时声明 Render Postgres，并把 `DATABASE_URL` 自动注入 Web Service。Render 免费 Web Service 的文件系统是临时的，容器内 SQLite 会在重启后丢失。免费 Render Postgres 可以验证功能，但官方限制为创建 30 天后到期且没有备份；长期实盘存档应升级数据库或改接其他长期 PostgreSQL。
 
 ## 安装到 Android 手机
 
@@ -111,11 +134,19 @@ git push
 | `APP_API_BASE_URL` | 空 | 仅在构建 Android 时使用，必须是已部署后端的 HTTPS 根地址 |
 | `ENABLE_API_DOCS` | `0` | 设为 `1` 时开放 `/api/docs` |
 | `PORT` | `8000` | 云平台监听端口 |
+| `DATABASE_URL` | 本地 SQLite | 线上 PostgreSQL 连接串；Render Blueprint 自动注入 |
 
 ## API
 
 - `GET /api/health`
 - `GET /api/analyze?code=920xxx&position=100`
+- `GET /api/profile?code=920xxx`
+- `POST /api/profile/save`
+- `GET /api/quote?code=920xxx`
+- `GET /api/metrics?code=920xxx`
+- `POST /api/signal-event`
+- `GET /api/signal-events?code=920xxx&date=YYYY-MM-DD`
+- `POST /api/relay/quote`（可选本机 TQ 中转）
 - 若设置访问口令，使用请求头 `X-App-Token`，页面会把口令保存在当前浏览器的 `localStorage` 中。
 
 ## 数据与风险边界

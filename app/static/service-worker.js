@@ -1,4 +1,4 @@
-const CACHE_NAME = "bse-sell-shell-v1.1.4";
+const CACHE_NAME = "bse-sell-shell-v2.0.0";
 const APP_SHELL = [
   "/",
   "/static/styles.css",

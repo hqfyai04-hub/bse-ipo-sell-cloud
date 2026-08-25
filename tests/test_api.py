@@ -1,8 +1,9 @@
 from fastapi.testclient import TestClient
 
 from app import main
-from app.market import IpoProfile, MarketDataError
+from app.market import CHINA_TZ, IpoProfile, MarketDataError, Quote
 from app.main import app
+from app.store import CloudMarketStore
 
 
 client = TestClient(app)
@@ -23,7 +24,8 @@ def test_invalid_code_is_rejected_before_network():
 def test_home_and_static_assets():
     response = client.get("/")
     assert response.status_code == 200
-    assert "输入代码，判断当前卖出窗口" in response.text
+    assert "北交所新股首日卖出助手 V3.2" in response.text
+    assert "竞价、换手、VWAP、回撤、临停与盘中存档" in response.text
     assert client.get("/static/app.js").status_code == 200
 
 
@@ -96,3 +98,54 @@ def test_frontend_hides_stale_dashboard_on_error():
     assert "if (response.status === 409)" in script
     assert "state.paused = true;" in script
     assert "scheduleRefresh();" in script
+
+
+def test_v32_quote_api_persists_turnover_metrics(monkeypatch, tmp_path):
+    now = main.datetime.now(CHINA_TZ)
+    profile = _pending_profile(now.date().isoformat())
+    quote = Quote(
+        code="920071", name="金钛股份", price=20, open=19, high=21, low=18.8,
+        previous_close=9.72, vwap=19.6, turnover_pct=10,
+        volume_shares=1_000_000, amount_yuan=19_600_000,
+        float_market_value=500_000_000, market_time=now, received_at=now,
+        source="测试行情",
+    )
+    test_store = CloudMarketStore(f"sqlite:///{(tmp_path / 'api.sqlite3').as_posix()}")
+    test_store.save_profile({
+        "code": "920071", "issuePrice": 9.72,
+        "firstDayTradableShares": 10_000_000,
+        "denominatorSource": "上市公告书", "denominatorVerified": True,
+    })
+    monkeypatch.setattr(main, "store", test_store)
+    monkeypatch.setattr(main.market, "profile", lambda code: profile)
+    monkeypatch.setattr(main.market, "quote", lambda code: (quote, []))
+
+    response = client.get("/api/quote", params={"code": "920071"})
+
+    assert response.status_code == 200
+    payload = response.json()["quote"]
+    assert payload["turnover"] == 10
+    assert payload["dataQuality"]["denominatorVerified"] is True
+    assert payload["dataQuality"]["persistent"] is False
+
+
+def test_v32_profile_and_signal_archive_api(monkeypatch, tmp_path):
+    test_store = CloudMarketStore(f"sqlite:///{(tmp_path / 'archive-api.sqlite3').as_posix()}")
+    monkeypatch.setattr(main, "store", test_store)
+    monkeypatch.setattr(main.market, "profile", lambda code: _pending_profile("2026-08-25"))
+    saved = client.post("/api/profile/save", json={
+        "code": "920071", "issuePrice": 9.72,
+        "firstDayTradableShares": 45_000_000,
+        "denominatorSource": "上市公告书", "denominatorVerified": True,
+    })
+    event = client.post("/api/signal-event", json={
+        "sessionDate": "2026-08-25", "code": "920071",
+        "capturedAt": "2026-08-25T09:35:00+08:00", "source": "test",
+        "grade": "观察", "nearest": "继续观察", "decisionKey": "hold",
+    })
+    archive = client.get("/api/signal-events", params={"code": "920071", "date": "2026-08-25"})
+
+    assert saved.status_code == 200
+    assert saved.json()["profile"]["denominatorVerified"] is True
+    assert event.status_code == 200
+    assert archive.json()["archive"]["total"] == 1

@@ -1,0 +1,45 @@
+{
+  "version": "2026-08-05-full-sample-v1",
+  "as_of": "2026-08-05",
+  "sample_count": 47,
+  "denominator": "上市日TdxQuant历史股本Ltgb（首日可交易筹码）",
+  "auction": {
+    "exact_sample_count": 1,
+    "low_price_discovery_threshold": 0.03,
+    "historical_proxy_field": "auction_proxy_turnover",
+    "warning": "历史第一根1分钟线包含09:25竞价和09:30-09:31连续竞价，不得当作纯竞价换手。"
+  },
+  "turnover_bands": {
+    "turnover_30m_q25": 0.37879763178670023,
+    "turnover_30m_median": 0.45198765432098764,
+    "turnover_30m_q75": 0.5040741963008507,
+    "turnover_60m_q25": 0.4824264100532508,
+    "turnover_60m_median": 0.5558836168916893,
+    "turnover_60m_q75": 0.6373711572918597
+  },
+  "branches": {
+    "conservative": {
+      "rule_name": "S5_T3_V1_W0_E60",
+      "start_minute": 5,
+      "trailing_drawdown": 0.03,
+      "require_below_vwap": true,
+      "weak_open_stop": null,
+      "time_exit_minute": 60
+    },
+    "game": {
+      "rule_name": "S15_T10_V1_W0_E230",
+      "start_minute": 15,
+      "trailing_drawdown": 0.1,
+      "require_below_vwap": true,
+      "weak_open_stop": null,
+      "time_exit_minute": 230
+    }
+  },
+  "target_price_rules": {
+    "target_zone_tolerance": 0.005,
+    "post_target_warning_drawdown": 0.03,
+    "post_target_confirmed_drawdown": 0.05,
+    "post_target_full_exit_drawdown": 0.08,
+    "single_lot_confirmed_exit_ratio": 1.0
+  }
+}

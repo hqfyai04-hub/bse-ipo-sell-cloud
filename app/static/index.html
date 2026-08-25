@@ -2,128 +2,3183 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#07111f">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f5fd5">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="北交所卖出助手">
-  <title>北交所新股卖出窗口助手</title>
+  <title>北交所新股首日卖出助手 V3.2</title>
   <link rel="manifest" href="/static/manifest.webmanifest">
   <link rel="icon" href="/static/icons/icon-192.png" sizes="192x192">
-  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    :root {
+      --bg: #f3f5f8; --panel: #fff; --line: #d9e1e9; --text: #172235;
+      --muted: #687789; --blue: #1f5fd5; --green: #0b7a55; --amber: #a86600;
+      --red: #bd3030; --ink: #101827;
+    }
+    * { box-sizing: border-box; }
+    html { min-width: 0; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+    body { margin: 0; min-width: 0; overflow-x: hidden; font-family: "Microsoft YaHei","PingFang SC",Arial,sans-serif; color: var(--text); background: var(--bg); }
+    header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    h1 { margin: 0; font-size: 20px; letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 15px; letter-spacing: 0; }
+    .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .source { color: var(--green); font-size: 13px; white-space: nowrap; }
+    main { max-width: 1500px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: 410px minmax(0,1fr); gap: 16px; }
+    section { min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+    .form { padding: 16px; align-self: start; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .wide { grid-column: 1 / -1; }
+    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
+    input,select,textarea { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; color: var(--text); background: #fff; font: inherit; font-size: 14px; }
+    input:focus,select:focus,textarea:focus { outline: 0; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(31,95,213,.12); }
+    textarea { min-height: 72px; resize: vertical; }
+    .actions { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 12px; }
+    button { min-height: 38px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font: inherit; cursor: pointer; }
+    button.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .status { margin-top: 10px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fafcff; color: var(--muted); font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+    .dashboard { display: grid; gap: 16px; min-width: 0; }
+    .strip { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); }
+    .metric { padding: 12px; border-right: 1px solid var(--line); min-width: 0; }
+    .metric:last-child { border-right: 0; }
+    .metric span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .metric strong { display: block; font-size: 19px; overflow-wrap: anywhere; }
+    .autoPanel { padding: 16px; }
+    .tdxPanel { padding: 16px; }
+    .tdxHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .tdxHeader h2 { margin: 0; }
+    .tdxHeader button { padding: 7px 13px; min-height: 34px; }
+    .tdxGrid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
+    .tdxItem { border: 1px solid var(--line); border-radius: 7px; padding: 10px 11px; background: #fbfcfe; min-width: 0; }
+    .tdxItem span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 5px; }
+    .tdxItem strong { display: block; font-size: 17px; overflow-wrap: anywhere; }
+    .tdxGood { color: var(--green); }
+    .tdxWarn { color: var(--amber); }
+    .tdxBad { color: var(--red); }
+    .autoGrid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 10px; }
+    .autoItem { border: 1px solid var(--line); border-radius: 7px; padding: 11px; min-width: 0; background: #fbfcfe; }
+    .autoItem span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .autoItem strong { display: block; font-size: 18px; line-height: 1.25; overflow-wrap: anywhere; }
+    .autoItem small { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; line-height: 1.35; }
+    .forecastPanel { padding: 16px; }
+    .forecastGrid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
+    .forecastItem { border: 1px solid var(--line); border-radius: 8px; padding: 13px; min-width: 0; }
+    .forecastItem span { display: block; color: var(--muted); font-size: 12px; }
+    .forecastItem strong { display: block; margin-top: 7px; font-size: 25px; line-height: 1.15; overflow-wrap: anywhere; }
+    .forecastItem small { display: block; color: var(--muted); font-size: 11px; margin-top: 6px; line-height: 1.4; }
+    .forecastMeta { margin-top: 10px; padding: 9px 10px; border-radius: 6px; background: #f8fafc; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .actionBanner { position: sticky; top: 8px; z-index: 20; padding: 18px 22px; display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 16px; border-width: 2px; box-shadow: 0 8px 24px rgba(16,24,39,.12); }
+    .actionBanner span { display: block; font-size: 12px; font-weight: 700; letter-spacing: .12em; opacity: .82; }
+    .actionBanner strong { display: block; margin-top: 4px; font-size: 32px; line-height: 1.18; overflow-wrap: anywhere; }
+    .actionBanner small { display: block; margin-top: 7px; font-size: 14px; line-height: 1.45; }
+    .actionPrice { min-width: 180px; text-align: right; }
+    .actionPrice b { display: block; font-size: 30px; line-height: 1.15; }
+    .actionPrice em { display: block; margin-top: 5px; font-size: 12px; font-style: normal; }
+    .actionObserve { color: #075a41; background: #effaf5; border-color: #52a889; }
+    .actionWarn { color: #774800; background: #fff8e8; border-color: #d9a43a; }
+    .actionSell { color: #fff; background: #c62828; border-color: #8f1717; animation: actionPulse 1.4s ease-in-out infinite; }
+    .actionPaused { color: #334155; background: #f1f5f9; border-color: #94a3b8; }
+    @keyframes actionPulse { 0%,100% { box-shadow: 0 8px 24px rgba(198,40,40,.24); } 50% { box-shadow: 0 8px 34px rgba(198,40,40,.55); } }
+    @media (prefers-reduced-motion: reduce) { .actionSell { animation: none; } }
+    .alert { padding: 16px; display: grid; grid-template-columns: 250px minmax(0,1fr); gap: 14px; }
+    .gradeBox { border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; align-content: center; text-align: center; }
+    .scenario { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+    .grade { font-size: 34px; font-weight: 700; margin: 3px 0 12px; }
+    .observe { color: var(--green); } .reduce { color: var(--amber); } .sell,.danger { color: var(--red); }
+    .bar { width: 100%; height: 10px; border-radius: 99px; background: #edf1f6; overflow: hidden; }
+    .fill { height: 100%; width: 0; background: var(--green); }
+    .score { margin-top: 8px; font-size: 13px; color: var(--muted); }
+    .decision { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 10px; }
+    .box { border: 1px solid var(--line); border-radius: 8px; padding: 12px; min-height: 96px; }
+    .box span { color: var(--muted); font-size: 12px; }
+    .box strong { display: block; margin-top: 8px; font-size: 22px; line-height: 1.25; overflow-wrap: anywhere; }
+    .next { border-color: rgba(189,48,48,.35); background: #fffafa; }
+    .contentGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .reasons,.plan { padding: 16px; }
+    ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    li { padding: 9px 11px; border-left: 4px solid var(--blue); border-radius: 6px; background: #f8fafc; font-size: 13px; line-height: 1.45; }
+    li.good { border-left-color: var(--green); } li.warn { border-left-color: var(--amber); } li.bad { border-left-color: var(--red); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th,td { border-bottom: 1px solid var(--line); padding: 9px 8px; text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-weight: 500; background: #fafcff; }
+    .activeRow { background: #fff8ed; }
+    .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; background: #edf3ff; color: var(--blue); font-size: 11px; }
+    .disclaimer { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 12px; }
+    .qaPanel { padding: 16px; }
+    .qaInputRow { display: grid; grid-template-columns: minmax(0,1fr) 110px; gap: 10px; }
+    .qaInputRow input { min-height: 40px; }
+    .qaHistory { display: grid; gap: 9px; margin-top: 12px; max-height: 300px; overflow: auto; }
+    .qaMessage { border-radius: 7px; padding: 10px 12px; font-size: 13px; line-height: 1.55; white-space: pre-wrap; }
+    .qaUser { background: #edf3ff; color: #194b9d; margin-left: 12%; }
+    .qaAnswer { background: #f7f9fb; border-left: 4px solid var(--green); margin-right: 5%; }
+    .qaHint { color: var(--muted); font-size: 11px; margin-top: 8px; }
+    .archivePanel { padding: 16px; }
+    .archiveHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .archiveHeader h2 { margin: 0; }
+    .archiveControls { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+    .archiveControls label { display: flex; align-items: center; gap: 6px; }
+    .archiveControls input { width: auto; }
+    .archiveControls button { min-height: 32px; padding: 5px 10px; }
+    .archiveTableWrap { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 7px; }
+    .archiveTableWrap table { min-width: 960px; }
+    .archiveTableWrap td { line-height: 1.4; }
+    .archiveMaterial { background: #fff8ed; }
+    @media (max-width: 1100px) {
+      main { grid-template-columns: 1fr; }
+      .strip { grid-template-columns: repeat(3,minmax(0,1fr)); }
+      .autoGrid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+      .tdxGrid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .forecastGrid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .metric { border-bottom: 1px solid var(--line); }
+    }
+    @media (max-width: 720px) {
+      header { align-items: flex-start; flex-direction: column; padding: max(12px,env(safe-area-inset-top)) 12px 10px; gap: 7px; }
+      header > div:first-child { width: 100%; min-width: 0; }
+      h1 { max-width: 100%; font-size: 18px; line-height: 1.3; word-break: break-all; overflow-wrap: anywhere; }
+      .sub { max-width: 100%; line-height: 1.45; word-break: break-all; overflow-wrap: anywhere; }
+      .source { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+      main { padding: 8px max(8px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)); gap: 10px; }
+      .dashboard { order: -1; gap: 10px; }
+      .form { order: 1; padding: 12px; }
+      .dashboard > .actionBanner { order: -10; }
+      .dashboard > .alert { order: -9; }
+      .dashboard > .strip { order: -8; }
+      .dashboard > .contentGrid { order: -7; }
+      .grid,.actions,.contentGrid { grid-template-columns: 1fr; }
+      .decision { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .decision .box:first-child,.decision .box:nth-child(2),.decision .box:last-child { grid-column: 1 / -1; }
+      .qaInputRow { grid-template-columns: 1fr; }
+      .alert { grid-template-columns: 1fr; }
+      .strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .autoGrid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .tdxHeader { align-items: flex-start; flex-direction: column; }
+      .tdxGrid { grid-template-columns: 1fr 1fr; }
+      .forecastGrid { grid-template-columns: 1fr; }
+      input,select,textarea { min-height: 44px; font-size: 16px; }
+      button { min-height: 44px; padding: 8px 10px; touch-action: manipulation; }
+      .actionBanner { position: sticky; top: 0; grid-template-columns: 1fr auto; gap: 9px; padding: 13px 14px; border-radius: 9px; }
+      .actionBanner strong { font-size: 24px; }
+      .actionBanner small { font-size: 13px; }
+      .actionPrice { min-width: 0; text-align: right; }
+      .actionPrice b { font-size: 22px; }
+      .alert { padding: 10px; gap: 10px; }
+      .gradeBox { padding: 12px; }
+      .grade { font-size: 29px; margin-bottom: 8px; }
+      .box { min-height: 0; padding: 10px; }
+      .box strong { font-size: 17px; }
+      .metric { padding: 10px; }
+      .metric strong { font-size: 17px; }
+      .reasons,.plan,.autoPanel,.tdxPanel,.forecastPanel,.qaPanel,.archivePanel { padding: 12px; }
+      .plan { overflow: hidden; }
+      .plan table,.plan tbody,.plan tr,.plan td { display: block; width: 100%; }
+      .plan thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .plan tr { margin-bottom: 9px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 7px; background: #fbfcfe; }
+      .plan tr.activeRow { background: #fff8ed; }
+      .plan td { position: relative; padding: 3px 0 3px 74px; border: 0; line-height: 1.45; overflow-wrap: anywhere; }
+      .plan td::before { position: absolute; left: 0; width: 68px; color: var(--muted); font-size: 11px; }
+      .plan td:nth-child(1)::before { content: "档位"; }
+      .plan td:nth-child(2)::before { content: "触发"; }
+      .plan td:nth-child(3)::before { content: "判定/执行"; }
+      .plan td:nth-child(4)::before { content: "仓位"; }
+      .archiveHeader { align-items: flex-start; flex-direction: column; }
+      .archiveControls { justify-content: flex-start; }
+    }
+    @media (max-width: 390px) {
+      .actionBanner { grid-template-columns: 1fr; }
+      .actionPrice { text-align: left; }
+      .decision,.strip,.autoGrid,.tdxGrid { grid-template-columns: 1fr; }
+      .decision .box { grid-column: auto; }
+    }
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="/" aria-label="返回首页">
-      <span class="brand-mark">BSE</span>
-      <span>新股卖出窗口</span>
-    </a>
-    <div class="header-actions">
-      <button id="installAppBtn" class="install-button" type="button" hidden>安装到手机</button>
-      <button id="refreshToggleBtn" class="refresh-button" type="button" aria-pressed="false" hidden>暂停刷新</button>
-      <div class="live-state"><span id="liveDot" class="dot"></span><span id="liveText">未开始</span></div>
+  <header>
+    <div>
+        <h1>北交所首日卖出助手 V3.2</h1>
+      <div class="sub">V3.2 完整策略｜竞价、换手、VWAP、回撤、临停与盘中存档</div>
     </div>
+    <div><button id="installAppBtn" type="button" hidden>安装到手机</button> <span id="source" class="source">手动模式</span></div>
   </header>
 
   <main>
-    <section class="hero">
-      <p class="eyebrow">北交所 · 上市首日专用</p>
-      <h1>输入代码，判断当前卖出窗口</h1>
-      <p class="lead">自动读取发行资料与公开行情，结合开盘价、VWAP、高点回撤、换手和时段给出观察、分批或退出提示。</p>
-      <form id="searchForm" class="search-card">
-        <label class="field code-field">
-          <span>证券代码</span>
-          <input id="code" name="code" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="例如 920059" required>
+    <section class="form">
+      <h2>证券与策略参数</h2>
+      <div class="grid">
+        <label>证券代码
+          <input id="code" placeholder="例如 920071" autocomplete="off">
         </label>
-        <label class="field position-field">
-          <span>持仓股数 <em>可选</em></span>
-          <input id="position" name="position" type="number" inputmode="numeric" min="1" step="1" value="100">
+        <label>证券名称
+          <input id="name" placeholder="自动获取" autocomplete="off">
         </label>
-        <button id="startBtn" type="submit">开始判断</button>
-      </form>
-      <details id="accessBox" class="access-box">
-        <summary>私有部署访问口令</summary>
-        <div class="access-row">
-          <input id="accessToken" type="password" autocomplete="current-password" placeholder="未配置可留空">
-          <button id="saveToken" type="button">保存</button>
-        </div>
-      </details>
-      <p id="error" class="error" role="alert" hidden></p>
+        <label class="wide">远程访问口令（本地普通模式留空）
+          <input id="accessToken" type="password" placeholder="远程启动窗口显示的 Access token" autocomplete="off">
+        </label>
+        <label>发行价（自动/可改）
+          <input id="issuePrice" type="number" step="0.01" placeholder="行情可推定时自动填">
+        </label>
+        <label>预设卖出目标价（达到即执行）
+          <input id="targetPrice" type="number" step="0.01" placeholder="留空=使用动态卖出规则">
+        </label>
+        <label>流通市值（亿元，自动/可改）
+          <input id="floatCap" type="number" step="0.01" placeholder="用于 A/B/C 分类">
+        </label>
+        <label>首日实际可交易股数（万股，自动/可改）
+          <input id="tradableSharesWan" type="number" step="0.01" placeholder="行情交叉反推，公告值可覆盖">
+        </label>
+        <label>流通盘口径来源
+          <input id="denominatorSource" placeholder="自动生成；也可填公告书页码/链接">
+        </label>
+        <label>流通盘已核验
+          <select id="denominatorVerified">
+            <option value="0" selected>未交叉核验</option>
+            <option value="1">已自动交叉/按公告核验</option>
+          </select>
+        </label>
+        <label>持仓数量（股）
+          <input id="position" type="number" step="100" value="100">
+        </label>
+        <label>100股单手策略
+          <select id="singleLotMode">
+            <option value="tolerance" selected>容错优先｜软信号不卖</option>
+            <option value="return">收益优先｜严格竞价确认后全卖</option>
+          </select>
+        </label>
+        <label>行业热度（模型自动/可改）
+          <select id="industryHeat">
+            <option value="2">热门赛道</option>
+            <option value="1" selected>中等热度</option>
+            <option value="0">传统制造</option>
+          </select>
+        </label>
+        <label>发行 PE 折价率 %（自动/可改）
+          <input id="peDiscount" type="number" step="1" placeholder="可选">
+        </label>
+        <label>当前时间
+          <input id="clock" value="09:25:00" autocomplete="off">
+        </label>
+        <label>实际/预计开盘价
+          <input id="openPrice" type="number" step="0.01">
+        </label>
+        <label>当前价
+          <input id="currentPrice" type="number" step="0.01">
+        </label>
+        <label>盘中最高价
+          <input id="highPrice" type="number" step="0.01">
+        </label>
+        <label>盘中最低价
+          <input id="lowPrice" type="number" step="0.01">
+        </label>
+        <label>VWAP/分时均价
+          <input id="vwap" type="number" step="0.01">
+        </label>
+        <label>当前换手率 %
+          <input id="turnover" type="number" step="0.1">
+        </label>
+        <label>开盘30分钟累计换手率 %（10:00锁定）
+          <input id="turnover30" type="number" step="0.1" placeholder="可手动补充">
+        </label>
+        <label>竞价成交占比 %（9:25 自动）
+          <input id="auctionRatio" type="number" step="0.01" placeholder="未捕获时留空，不等于0">
+        </label>
+        <label>9:25五档订单失衡 %（自动/可改）
+          <input id="auctionImbalance" type="number" step="0.1" placeholder="负值=卖压，正值=买盘">
+        </label>
+        <label>竞价盘口已核验
+          <select id="auctionBookVerified">
+            <option value="0" selected>未核验/无精确快照</option>
+            <option value="1">TQ精确快照/人工核验</option>
+          </select>
+        </label>
+        <label>首日同步解禁（公告确认）
+          <select id="unlock">
+            <option value="0" selected>未知/否</option>
+            <option value="1">是</option>
+          </select>
+        </label>
+        <label class="wide">临停状态（自动识别不可靠时可手动指定）
+          <select id="haltState">
+            <option value="auto" selected>自动判断</option>
+            <option value="near30">接近30%临停</option>
+            <option value="halted30">30%临停中</option>
+            <option value="resumed30">30%临停复牌后</option>
+            <option value="near60">接近60%临停</option>
+            <option value="halted60">60%临停中</option>
+            <option value="resumed60">60%临停复牌后</option>
+          </select>
+        </label>
+        <label class="wide">盘面备注
+          <textarea id="notes" placeholder="撤单、临停、反抽不创新高、均价线失守等"></textarea>
+        </label>
+      </div>
+      <div class="actions">
+        <button class="primary" id="autoBtn">启动自动行情</button>
+        <button id="refreshBtn">刷新判断</button>
+        <button id="saveProfileBtn">保存流通盘口径</button>
+      </div>
+      <div id="feedStatus" class="status">输入北交所证券代码后启动自动行情。发行价、流通市值缺失时可手动补充。</div>
+      <div id="autoStatus" class="status">自动资料：尚未加载。开盘30分钟换手在10:00附近锁定；滚动30分钟增量由持久化快照计算；竞价占比在9:25有效成交出现后自动确认。</div>
+      <div class="disclaimer">本工具只生成行情提示和分档计划，不连接券商下单。未核验首日流通盘时，换手指标只作低可信度参考；历史Tick暂不能盘后还原9:25，须依赖实时采集。任何“最优窗口”均不保证卖在最高价。</div>
     </section>
 
-    <section id="dashboard" class="dashboard" hidden aria-live="polite">
-      <article id="decisionCard" class="decision-card hold">
-        <div class="decision-topline">
-          <span id="actionLabel" class="action-label">等待行情</span>
-          <span id="confidence" class="confidence">低置信度</span>
-        </div>
-        <h2 id="headline">正在读取行情…</h2>
-        <div class="execution-grid">
-          <div>
-            <span>建议操作</span>
-            <strong id="operation">暂不卖出</strong>
-          </div>
-          <div>
-            <span>当前执行参考</span>
-            <strong id="executionPrice">--</strong>
-          </div>
-          <div>
-            <span>动态保护参考</span>
-            <strong id="guardPrice">--</strong>
-          </div>
-        </div>
-        <p id="bestWindow" class="best-window">等待有效行情</p>
-        <p id="urgency" class="urgency"></p>
-      </article>
+    <div class="dashboard">
+      <section class="strip">
+        <div class="metric"><span>证券</span><strong id="mStock">待输入</strong></div>
+        <div class="metric"><span>开盘涨幅</span><strong id="mOpenPct">--</strong></div>
+        <div class="metric"><span>当前涨幅</span><strong id="mCurrentPct">--</strong></div>
+        <div class="metric"><span>高点回撤</span><strong id="mPullback">--</strong></div>
+        <div class="metric"><span>换手率</span><strong id="mTurnover">--</strong></div>
+        <div class="metric"><span>相对 VWAP</span><strong id="mVwap">--</strong></div>
+        <div class="metric"><span>临停参考</span><strong id="mHalt">--</strong></div>
+      </section>
 
-      <section class="identity-row">
+      <section class="tdxPanel">
+        <div class="tdxHeader">
+          <h2>本机 TQ 中转 / 云端数据质量</h2>
+          <button class="primary" id="tdxStartBtn">检查 TQ 中转</button>
+        </div>
+        <div class="tdxGrid">
+          <div class="tdxItem"><span>本机中转连接</span><strong id="tdxProcess">检测中</strong></div>
+          <div class="tdxItem"><span>TQ只读行情</span><strong id="tdxReady">检测中</strong></div>
+          <div class="tdxItem"><span>开盘前巡检模式</span><strong id="tdxAutostart">检测中</strong></div>
+          <div class="tdxItem"><span>最近检查</span><strong id="tdxCheckedAt">--</strong></div>
+        </div>
+        <div id="tdxStatusNote" class="status">正在检查本机通达信进程和TQ行情连接。远程启动只负责拉起软件；若登录状态失效，仍需人工完成登录。</div>
+      </section>
+
+      <section class="autoPanel">
+        <h2>自动资料与盘中指标</h2>
+        <div class="autoGrid">
+          <div class="autoItem"><span>流通市值</span><strong id="aFloatCap">--</strong><small>实时行情自动更新</small></div>
+          <div class="autoItem"><span>发行 PE</span><strong id="aIssuePe">--</strong><small>发行资料</small></div>
+          <div class="autoItem"><span>行业 PE</span><strong id="aIndustryPe">--</strong><small>发行资料行业口径</small></div>
+          <div class="autoItem"><span>PE 折价率</span><strong id="aDiscount">--</strong><small>1－发行PE/行业PE</small></div>
+          <div class="autoItem"><span>模型行业热度</span><strong id="aHeat">--</strong><small>根据行业与主营关键词推导</small></div>
+          <div class="autoItem"><span>询价账户数量</span><strong id="aInquiry">--</strong><small>发行资料</small></div>
+          <div class="autoItem"><span>实时换手率</span><strong id="aTurnover">--</strong><small>实时行情</small></div>
+          <div class="autoItem"><span>首日实际流通盘</span><strong id="aTradableShares">未配置</strong><small id="aDenominatorStatus">需按上市公告书核验</small></div>
+          <div class="autoItem"><span>最近5分钟换手增量</span><strong id="aTurnoverDelta5">采集中</strong><small>基于自定义累计换手计算</small></div>
+          <div class="autoItem"><span>数据可信度</span><strong id="aDataQuality">低</strong><small id="aDataQualityNote">等待TQ与流通盘口径</small></div>
+          <div class="autoItem"><span>换手×价格结构</span><strong id="aTurnoverStructure">采集中</strong><small id="aTurnoverStructureNote">换手率不单独触发买卖</small></div>
+          <div class="autoItem"><span>开盘30分钟换手</span><strong id="aTurnover30">采集中</strong><small id="aTurnover30Note">10:00附近锁定累计值</small></div>
+          <div class="autoItem"><span>开盘换手档位</span><strong id="aTurnoverBand">待判断</strong><small id="aTurnoverBandNote">&lt;30弱｜30-40常态｜40-50活跃｜≥50极高</small></div>
+          <div class="autoItem"><span>价格保持度</span><strong id="aPriceRetention">--</strong><small>当前价÷盘中最高价</small></div>
+          <div class="autoItem"><span>滚动30分钟换手</span><strong id="aRollingTurnover30">采集中</strong><small id="aRollingTurnover30Note">用于观察后续成交衰减</small></div>
+          <div class="autoItem"><span>竞价成交占比</span><strong id="aAuction">未捕获</strong><small id="aAuctionNote">等待9:25有效成交快照</small></div>
+          <div class="autoItem"><span>9:25订单失衡</span><strong id="aAuctionImbalance">未捕获</strong><small id="aAuctionImbalanceNote">负值代表五档委卖金额更大</small></div>
+          <div class="autoItem"><span>首日同步解禁</span><strong id="aUnlock">待确认</strong><small>以发行/上市公告为准</small></div>
+          <div class="autoItem"><span>当前行情源</span><strong id="aSource">--</strong><small id="aCache">等待连接</small></div>
+          <div class="autoItem"><span>数据新鲜度</span><strong id="aFreshness">--</strong><small>超过15秒暂停强提示</small></div>
+          <div class="autoItem"><span>连续失败次数</span><strong id="aFailures">0</strong><small id="aSessionDate">交易日会话待建立</small></div>
+          <div class="autoItem"><span>开盘15分钟高点</span><strong id="aOpeningRangeHigh">采集中</strong><small id="aOpeningRangeNote">9:45冻结，作为二次突破基准</small></div>
+          <div class="autoItem"><span>二次突破状态</span><strong id="aSecondaryBreakout">未触发</strong><small id="aSecondaryBreakoutNote">需重新站上早盘高点与VWAP</small></div>
+          <div class="autoItem"><span>尾仓移动保护</span><strong id="aTailGuard">--</strong><small id="aTailGuardNote">突破后按峰值5%回撤保护</small></div>
+        </div>
+      </section>
+
+      <section class="forecastPanel">
+        <h2>首日价格统计参考区间</h2>
+        <div class="forecastGrid">
+          <div class="forecastItem"><span>预测开盘价</span><strong id="pOpen">--</strong><small id="pOpenRange">等待发行资料</small></div>
+          <div class="forecastItem"><span>预测最低价</span><strong id="pLow">--</strong><small id="pLowRange">等待开盘基准</small></div>
+          <div class="forecastItem"><span>预测最高价</span><strong id="pHigh">--</strong><small id="pHighRange">等待开盘基准</small></div>
+          <div class="forecastItem"><span>资料完整度</span><strong id="pConfidence">--</strong><small>不是预测成功概率</small></div>
+        </div>
+        <div id="pFactors" class="forecastMeta">预测因子尚未加载。区间仅用于风险计划，不代表保证价格。</div>
+      </section>
+
+      <section id="actionBanner" class="actionBanner actionObserve" role="alert" aria-live="assertive" aria-atomic="true">
         <div>
-          <p id="stockName" class="stock-name">--</p>
-          <p id="stockMeta" class="stock-meta">--</p>
+          <span>当前明确操作</span>
+          <strong id="actionTitle">暂不卖出｜等待有效行情</strong>
+          <small id="actionDetail">行情更新后，这里会直接显示卖出数量、时限和主要原因。</small>
         </div>
-        <div class="quote-primary">
-          <strong id="currentPrice">--</strong>
-          <span id="quoteTime">--</span>
+        <div class="actionPrice">
+          <b id="actionPrice">--</b>
+          <em id="actionDeadline">尚未触发</em>
         </div>
       </section>
 
-      <section class="metric-grid" aria-label="实时指标">
-        <article><span>开盘价</span><strong id="openPrice">--</strong></article>
-        <article><span>最高价</span><strong id="highPrice">--</strong></article>
-        <article><span>VWAP</span><strong id="vwap">--</strong></article>
-        <article><span>高点回撤</span><strong id="pullback">--</strong></article>
-        <article><span>累计换手</span><strong id="turnover">--</strong></article>
-        <article><span>开盘溢价</span><strong id="openPremium">--</strong></article>
+      <section class="alert">
+        <div class="gradeBox">
+          <div id="scenario" class="scenario">等待分类</div>
+          <div id="grade" class="grade observe">观察</div>
+          <div class="bar"><div id="fill" class="fill"></div></div>
+          <div id="score" class="score">强弱评分 0/100</div>
+        </div>
+        <div class="decision">
+          <div class="box next"><span>当前执行提示</span><strong id="nearest">等待行情</strong></div>
+          <div class="box next"><span>当前最优卖出窗口（模型）</span><strong id="bestWindow">等待行情</strong></div>
+          <div class="box"><span>当前执行价（实时）</span><strong id="sellPrice">--</strong></div>
+          <div class="box"><span>建议数量</span><strong id="sellQty">--</strong></div>
+          <div class="box"><span>保护价</span><strong id="guard">--</strong></div>
+          <div class="box"><span>剩余最晚处理</span><strong id="deadline">--</strong></div>
+          <div class="box"><span>风险类型</span><strong id="riskType">--</strong></div>
+          <div class="box next"><span>剩余仓位计划</span><strong id="remainingPlan">等待行情</strong></div>
+        </div>
       </section>
 
-      <section class="detail-grid">
-        <article class="panel">
-          <div class="panel-title"><h3>判断依据</h3><span>组合确认</span></div>
-          <ul id="reasons" class="reason-list"></ul>
-        </article>
-        <article class="panel">
-          <div class="panel-title"><h3>数据与风险</h3><span id="quoteSource">--</span></div>
-          <ul id="warnings" class="warning-list"></ul>
-        </article>
+      <div class="contentGrid">
+        <section class="reasons">
+          <h2>判断依据</h2>
+          <ul id="reasons"></ul>
+        </section>
+        <section class="plan">
+          <h2>分档卖出计划</h2>
+          <table>
+            <thead><tr><th>档位</th><th>触发</th><th>判定线 / 执行方式</th><th>仓位</th></tr></thead>
+            <tbody id="planBody"></tbody>
+          </table>
+          <div class="status">观察基准和动态预警线不等于委托价；只有当前执行提示产生数量时，才按实时盘口给出执行价。首次有效VWAP失守线会冻结记录，避免均价下移造成误解。</div>
+        </section>
+      </div>
+
+      <section class="qaPanel">
+        <h2>盘中问答</h2>
+        <div class="qaInputRow">
+          <input id="qaInput" placeholder="例如：现在可以卖了吗？为什么？参考价格和数量是多少？" autocomplete="off">
+          <button class="primary" id="qaBtn">分析并回答</button>
+        </div>
+        <div class="qaHint">回答基于当前页面行情和规则实时生成，不会上传证券、持仓或问题内容。</div>
+        <div id="qaHistory" class="qaHistory"></div>
       </section>
 
-      <article class="panel history-panel">
-        <div class="panel-title"><h3>本次监控变化</h3><span>仅保存在当前浏览器</span></div>
-        <div id="history" class="history-empty">尚无关键变化</div>
-      </article>
-    </section>
-
-    <section class="boundary">
-      <strong>重要边界</strong>
-      <p>“当前卖出窗口”不是对最高价的预测。公开行情可能延迟或受限，本软件不连接券商、不自动下单，任何执行必须以券商终端的可成交盘口为准。</p>
-    </section>
+      <section class="archivePanel">
+        <div class="archiveHeader">
+          <h2>盘中分析与卖出提示存档</h2>
+          <div class="archiveControls">
+            <label><input id="archiveChangesOnly" type="checkbox" checked>仅看关键变化</label>
+            <button id="archiveRefreshBtn">刷新今日存档</button>
+            <button id="archiveExportBtn">导出完整 CSV</button>
+          </div>
+        </div>
+        <div id="archiveStatus" class="status">自动行情每次完成分析后都会写入本地数据库；关键变化会单独标记，便于盘后复盘。</div>
+        <div class="archiveTableWrap">
+          <table>
+            <thead><tr><th>时间</th><th>价格 / VWAP</th><th>等级</th><th>卖出提示</th><th>数量</th><th>保护价</th><th>主要依据</th></tr></thead>
+            <tbody id="archiveRows"><tr><td colspan="7">尚未读取存档</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   </main>
 
-  <footer>开源部署版 · 仅用于北交所新股上市首日辅助判断</footer>
   <script src="/static/app-config.js"></script>
-  <script src="/static/app.js" defer></script>
-  <script src="/static/pwa.js" defer></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const BRIDGE = String(window.APP_CONFIG?.API_BASE_URL || (location.protocol.startsWith("http") ? location.origin : "http://127.0.0.1:8765")).replace(/\/$/, "");
+    const URL_PARAMS = new URLSearchParams(location.search);
+    const HASH_PARAMS = new URLSearchParams(location.hash.replace(/^#/, ""));
+    const URL_TOKEN = URL_PARAMS.get("token") || HASH_PARAMS.get("token") || "";
+    const RAW_URL_CODE = URL_PARAMS.get("code") || "";
+    if (HASH_PARAMS.get("token") && typeof history !== "undefined" && history.replaceState) {
+      history.replaceState(null, "", `${location.pathname}${location.search}`);
+    }
+    function resolveUrlCode(rawCode, token) {
+      // 8月17日恒兴的临时公网入口已转交给8月19日双英专案。
+      // 只迁移这条带原专用口令的旧链接，普通历史复盘不受影响。
+      if (rawCode === "920107" && token === "hx920107-2f9a7c4e8d1b6c30") return "920059";
+      return rawCode;
+    }
+    const URL_CODE = resolveUrlCode(RAW_URL_CODE, URL_TOKEN);
+    if (URL_CODE && URL_CODE !== RAW_URL_CODE && typeof history !== "undefined" && history.replaceState) {
+      const correctedParams = new URLSearchParams(location.search);
+      correctedParams.set("code", URL_CODE);
+      history.replaceState(null, "", `?${correctedParams.toString()}`);
+    }
+    let timer = null;
+    let tdxTimer = null;
+    let vwapBelowSince = null;
+    let vwapReboundAttemptAt = null;
+    let vwapAboveSince = null;
+    let vwapReboundFailedAt = null;
+    let vwapTriggerPrice = NaN;
+    let vwapTriggerAt = null;
+    let maxTriggeredExitStage = 0;
+    let openingRangeHigh = NaN;
+    let openingRangeFrozenAt = null;
+    let secondaryBreakoutAt = null;
+    let secondaryBreakoutLevel = NaN;
+    let secondaryPeak = NaN;
+    let activeSignalStateKey = "";
+    let previousPrice = null;
+    let loadedProfileCode = "";
+    let profileStatusText = "自动资料尚未加载。";
+    let currentListingDate = "";
+    let marketHealth = {fresh:false, ageSeconds:null, failures:0, source:"", usingCache:false, quality:"low", phase:"unknown", quoteFrozen:false, unchangedSeconds:0};
+    let currentSessionDate = "";
+    let quoteSampleCount = 0;
+    let firstQuoteAt = null;
+    let lastQuoteVolume = null;
+    let resumeObservedAt = null;
+    let autoHaltLevel = 0;
+    let autoHaltResumeMinute = NaN;
+    let rollingTurnover30 = NaN;
+    let openingTurnover30Final = false;
+    let turnoverDelta5 = NaN;
+    let quoteDataQuality = {confidence:"low", denominatorVerified:false, tqPrimary:false};
+    let auctionBookMeta = {captured:false, reliable:false, source:"", capturedAt:""};
+    let lastQuoteCapturedAt = "";
+    let lastArchivedCapturedAt = "";
+    let currentArchiveEvents = [];
+
+    const num = id => Number($(id).value);
+    const optionalNum = id => String($(id).value || "").trim() === "" ? NaN : Number($(id).value);
+    const fmtPrice = v => Number.isFinite(v) && v > 0 ? v.toFixed(2) : "--";
+    const fmtPct = v => Number.isFinite(v) ? `${v >= 0 ? "+" : ""}${v.toFixed(1)}%` : "--";
+    const executableSell = (position, ratio) => {
+      if (!Number.isFinite(position) || position <= 0 || ratio <= 0) return {qty:0, pct:0};
+      if (position < 200) {
+        if (ratio < 100) return {qty:0, pct:0};
+        return {qty:position, pct:100};
+      }
+      const target = position * ratio / 100;
+      let qty = target < 100 ? 100 : Math.floor(target / 100) * 100;
+      qty = Math.min(position, qty);
+      return {qty, pct:qty / position * 100};
+    };
+    const timeValue = text => {
+      const parts = String(text || "").split(":").map(Number);
+      return (parts[0] || 0) * 60 + (parts[1] || 0) + (parts[2] || 0) / 60;
+    };
+    const accessToken = () => $("accessToken").value.trim();
+
+    function resetSignalState() {
+      vwapBelowSince = null;
+      vwapReboundAttemptAt = null;
+      vwapAboveSince = null;
+      vwapReboundFailedAt = null;
+      vwapTriggerPrice = NaN;
+      vwapTriggerAt = null;
+      maxTriggeredExitStage = 0;
+      openingRangeHigh = NaN;
+      openingRangeFrozenAt = null;
+      secondaryBreakoutAt = null;
+      secondaryBreakoutLevel = NaN;
+      secondaryPeak = NaN;
+      activeSignalStateKey = "";
+      resumeObservedAt = null;
+      autoHaltLevel = 0;
+      autoHaltResumeMinute = NaN;
+    }
+
+    function signalStateKey(s) {
+      const session = currentSessionDate
+        || localStorage.getItem("bseSessionDate")
+        || new Date().toLocaleDateString("sv-SE");
+      const code = String(s.code || "unknown").replace(/\D/g, "") || "unknown";
+      return `bseSellSignalState:${session}:${code}`;
+    }
+
+    function ensureSignalState(s) {
+      const key = signalStateKey(s);
+      if (key === activeSignalStateKey) return;
+      resetSignalState();
+      activeSignalStateKey = key;
+      try {
+        const saved = JSON.parse(localStorage.getItem(key) || "{}");
+        vwapBelowSince = Number(saved.vwapBelowSince) || null;
+        vwapReboundAttemptAt = Number(saved.vwapReboundAttemptAt) || null;
+        vwapAboveSince = Number(saved.vwapAboveSince) || null;
+        vwapReboundFailedAt = Number(saved.vwapReboundFailedAt) || null;
+        vwapTriggerPrice = Number(saved.vwapTriggerPrice) || NaN;
+        vwapTriggerAt = Number(saved.vwapTriggerAt) || null;
+        maxTriggeredExitStage = Number(saved.maxTriggeredExitStage) || 0;
+        openingRangeHigh = Number(saved.openingRangeHigh) || NaN;
+        openingRangeFrozenAt = Number(saved.openingRangeFrozenAt) || null;
+        secondaryBreakoutAt = Number(saved.secondaryBreakoutAt) || null;
+        secondaryBreakoutLevel = Number(saved.secondaryBreakoutLevel) || NaN;
+        secondaryPeak = Number(saved.secondaryPeak) || NaN;
+      } catch (_) {
+        resetSignalState();
+        activeSignalStateKey = key;
+      }
+    }
+
+    function persistSignalState() {
+      if (!activeSignalStateKey) return;
+      localStorage.setItem(activeSignalStateKey, JSON.stringify({
+        vwapBelowSince,
+        vwapReboundAttemptAt,
+        vwapAboveSince,
+        vwapReboundFailedAt,
+        vwapTriggerPrice,
+        vwapTriggerAt,
+        maxTriggeredExitStage,
+        openingRangeHigh,
+        openingRangeFrozenAt,
+        secondaryBreakoutAt,
+        secondaryBreakoutLevel,
+        secondaryPeak,
+      }));
+    }
+
+    function updateVwapSignalState(s, now = Date.now()) {
+      ensureSignalState(s);
+      if (!(s.current > 0) || !(s.vwap > 0)) {
+        return {sustainedBelow:false, reboundFailed:false, resumeWarmup:false, triggerPrice:vwapTriggerPrice, triggerAt:vwapTriggerAt};
+      }
+
+      const halted = s.haltState === "halted30" || s.haltState === "halted60";
+      const resumed = s.haltState === "resumed30" || s.haltState === "resumed60";
+      const openingWarmup = s.minutes >= 570 && s.minutes < 575;
+      if (halted || openingWarmup) {
+        vwapBelowSince = null;
+        vwapReboundAttemptAt = null;
+        vwapAboveSince = null;
+        vwapReboundFailedAt = null;
+        vwapTriggerPrice = NaN;
+        vwapTriggerAt = null;
+        if (halted) resumeObservedAt = null;
+        persistSignalState();
+        return {sustainedBelow:false, reboundFailed:false, resumeWarmup:false, triggerPrice:vwapTriggerPrice, triggerAt:vwapTriggerAt};
+      }
+
+      if (resumed) {
+        if (!resumeObservedAt) resumeObservedAt = now;
+        if (now - resumeObservedAt < 2 * 60 * 1000) {
+          vwapBelowSince = null;
+          vwapReboundAttemptAt = null;
+          vwapAboveSince = null;
+          vwapReboundFailedAt = null;
+          vwapTriggerPrice = NaN;
+          vwapTriggerAt = null;
+          persistSignalState();
+          return {sustainedBelow:false, reboundFailed:false, resumeWarmup:true, triggerPrice:vwapTriggerPrice, triggerAt:vwapTriggerAt};
+        }
+      } else {
+        resumeObservedAt = null;
+      }
+
+      if (s.currentVsVwap <= -1 && !vwapBelowSince) {
+        vwapBelowSince = now;
+        vwapTriggerPrice = s.vwap;
+        vwapTriggerAt = now;
+      }
+      const sustainedBelow = Boolean(vwapBelowSince && now - vwapBelowSince >= 5 * 60 * 1000);
+
+      if (vwapBelowSince && s.currentVsVwap >= -0.5 && !vwapReboundAttemptAt) {
+        vwapReboundAttemptAt = now;
+      }
+
+      if (vwapBelowSince && s.current >= s.vwap) {
+        if (!vwapReboundAttemptAt) vwapReboundAttemptAt = now;
+        if (!vwapAboveSince) vwapAboveSince = now;
+        if (now - vwapAboveSince >= 3 * 60 * 1000) {
+          vwapBelowSince = null;
+          vwapReboundAttemptAt = null;
+          vwapAboveSince = null;
+          vwapReboundFailedAt = null;
+          vwapTriggerPrice = NaN;
+          vwapTriggerAt = null;
+        }
+      } else {
+        vwapAboveSince = null;
+        if (vwapReboundAttemptAt && now - vwapReboundAttemptAt >= 3 * 60 * 1000) {
+          vwapReboundFailedAt = now;
+          vwapReboundAttemptAt = null;
+        }
+      }
+
+      persistSignalState();
+      return {
+        sustainedBelow: Boolean(vwapBelowSince && now - vwapBelowSince >= 5 * 60 * 1000),
+        reboundFailed: Boolean(vwapReboundFailedAt),
+        resumeWarmup: false,
+        triggerPrice: vwapTriggerPrice,
+        triggerAt: vwapTriggerAt,
+      };
+    }
+
+    function setSignalStateForTest(state, s = readState()) {
+      activeSignalStateKey = signalStateKey(s);
+      vwapBelowSince = Number(state.vwapBelowSince) || null;
+      vwapReboundAttemptAt = Number(state.vwapReboundAttemptAt) || null;
+      vwapAboveSince = Number(state.vwapAboveSince) || null;
+      vwapReboundFailedAt = Number(state.vwapReboundFailedAt) || null;
+      vwapTriggerPrice = Number(state.vwapTriggerPrice) || NaN;
+      vwapTriggerAt = Number(state.vwapTriggerAt) || null;
+      maxTriggeredExitStage = Number(state.maxTriggeredExitStage) || 0;
+      openingRangeHigh = Number(state.openingRangeHigh) || NaN;
+      openingRangeFrozenAt = Number(state.openingRangeFrozenAt) || null;
+      secondaryBreakoutAt = Number(state.secondaryBreakoutAt) || null;
+      secondaryBreakoutLevel = Number(state.secondaryBreakoutLevel) || NaN;
+      secondaryPeak = Number(state.secondaryPeak) || NaN;
+      persistSignalState();
+    }
+
+    function updateOpeningRangeState(s, now = Date.now()) {
+      ensureSignalState(s);
+      const hasPrice = s.open > 0 && s.current > 0 && s.high > 0;
+      const collecting = hasPrice && s.minutes >= 570 && s.minutes < 585;
+      if (collecting) {
+        openingRangeHigh = Number.isFinite(openingRangeHigh)
+          ? Math.max(openingRangeHigh, s.high)
+          : s.high;
+      }
+      if (s.minutes >= 585 && Number.isFinite(openingRangeHigh) && !openingRangeFrozenAt) {
+        openingRangeFrozenAt = now;
+      }
+
+      const level = Number(openingRangeHigh);
+      const breakoutNow = s.minutes >= 585
+        && Number.isFinite(level)
+        && level > 0
+        && s.dataFresh
+        && s.vwap > 0
+        && s.current >= level * 1.002
+        && s.current >= s.vwap;
+      if (breakoutNow && !secondaryBreakoutAt) {
+        secondaryBreakoutAt = now;
+        secondaryBreakoutLevel = level;
+        secondaryPeak = Math.max(s.current, s.high);
+      }
+      if (secondaryBreakoutAt) {
+        secondaryPeak = Number.isFinite(secondaryPeak)
+          ? Math.max(secondaryPeak, s.current, s.high)
+          : Math.max(s.current, s.high);
+      }
+      const peakPullback = secondaryBreakoutAt && secondaryPeak > 0
+        ? (1 - s.current / secondaryPeak) * 100
+        : NaN;
+      const tailGuard = secondaryBreakoutAt && secondaryPeak > 0
+        ? Math.max(secondaryPeak * .95, Number.isFinite(secondaryBreakoutLevel) ? secondaryBreakoutLevel : 0)
+        : NaN;
+      const tailExit = Boolean(
+        secondaryBreakoutAt
+        && s.minutes >= 585
+        && Number.isFinite(peakPullback)
+        && peakPullback >= 5
+      );
+      persistSignalState();
+      return {
+        level,
+        collecting,
+        frozen:Boolean(openingRangeFrozenAt),
+        frozenAt:openingRangeFrozenAt,
+        breakoutNow,
+        secondaryBreakoutActive:Boolean(secondaryBreakoutAt),
+        secondaryBreakoutAt,
+        secondaryBreakoutLevel,
+        secondaryPeak,
+        peakPullback,
+        tailGuard,
+        tailExit,
+      };
+    }
+
+    function readState() {
+      const issue = num("issuePrice"), open = num("openPrice"), current = num("currentPrice");
+      const high = Math.max(num("highPrice"), current), low = num("lowPrice"), vwap = num("vwap");
+      const pullback = high > 0 && current > 0 ? (1 - current / high) * 100 : NaN;
+      const priceRetention = high > 0 && current > 0 ? current / high * 100 : NaN;
+      return {
+        code: $("code").value.trim(), name: $("name").value.trim(), issue, open, current, high, low, vwap,
+        floatCap: num("floatCap"), targetPrice: num("targetPrice"), position: num("position"), singleLotMode: $("singleLotMode").value || "tolerance", heat: num("industryHeat"),
+        peDiscount: num("peDiscount"), turnover: num("turnover"), turnover30: num("turnover30"),
+        rollingTurnover30, openingTurnover30Final, turnoverDelta5,
+        tradableShares: num("tradableSharesWan") * 10000,
+        denominatorVerified: num("denominatorVerified") === 1,
+        turnoverVerified: Boolean(quoteDataQuality.denominatorVerified) || num("denominatorVerified") === 1,
+        dataQuality: quoteDataQuality.confidence || "low",
+        auctionRatio: optionalNum("auctionRatio"),
+        auctionImbalance: optionalNum("auctionImbalance"),
+        auctionBookVerified: auctionBookMeta.reliable || num("auctionBookVerified") === 1,
+        auctionBookCaptured: auctionBookMeta.captured,
+        auctionBookSource: auctionBookMeta.source,
+        auctionBookCapturedAt: auctionBookMeta.capturedAt,
+        unlock: num("unlock") === 1, notes: $("notes").value.trim(),
+        haltState: $("haltState").value, dataFresh: marketHealth.source ? marketHealth.fresh : true,
+        quoteFrozen: Boolean(marketHealth.quoteFrozen),
+        unchangedSeconds: Number(marketHealth.unchangedSeconds || 0),
+        autoFeed: Boolean(marketHealth.source),
+        quoteSamples: quoteSampleCount,
+        observationSeconds: firstQuoteAt ? (Date.now() - firstQuoteAt) / 1000 : 0,
+        clock: $("clock").value.trim(), minutes: timeValue($("clock").value),
+        openPct: issue > 0 && open > 0 ? (open / issue - 1) * 100 : NaN,
+        currentPct: issue > 0 && current > 0 ? (current / issue - 1) * 100 : NaN,
+        highVsOpen: open > 0 && high > 0 ? (high / open - 1) * 100 : NaN,
+        currentVsOpen: open > 0 && current > 0 ? (current / open - 1) * 100 : NaN,
+        currentVsVwap: vwap > 0 && current > 0 ? (current / vwap - 1) * 100 : NaN,
+        pullback, priceRetention,
+        rising: previousPrice !== null && current > previousPrice
+      };
+    }
+
+    function classify(s) {
+      if (Number.isFinite(s.openPct) && s.openPct < 0) return "D";
+      if (Number.isFinite(s.openPct) && s.openPct >= 300 && (!Number.isFinite(s.floatCap) || s.floatCap < 5)) return "A";
+      if ((Number.isFinite(s.openPct) && s.openPct >= 150) || (Number.isFinite(s.floatCap) && s.floatCap >= 5 && s.floatCap <= 10)) return "B";
+      return "C";
+    }
+
+    function scenarioName(type) {
+      return {
+        A: "A 类｜极端爆炒",
+        B: "B 类｜中等热度",
+        C: "C 类｜温和/弱势",
+        D: "D 类｜开盘破发"
+      }[type];
+    }
+
+    const priceProfiles = {
+      "920059": {
+        name: "双英集团",
+        conservative: [12.0, 13.8],
+        mainstream: [13.8, 15.5],
+        hot: [15.5, 17.2],
+        extreme: 17,
+        dream: 18,
+        valuationWatch: 16,
+        forecastOpen: [14.2, 16.2],
+        forecastLow: [12.8, 14.0],
+        forecastHigh: [15.5, 17.5],
+        forecastClose: [13.8, 15.5],
+        oldShareRatio: 0,
+        openingExitStrategy: "adaptive-momentum",
+        openingBaseLow: 14.5,
+        openingTargetMultiplier: 1.05,
+        weakOpeningTargetMultiplier: 1.03,
+        openingExitDeadlineMinutes: 580,
+        outlierOpenPremiumPct: 70,
+        outlierOpenVsForecastHigh: 1.10,
+        outlierLatestExitMinutes: 610,
+        scenarioText: "中性55%：开14.2-16.2/高15.5-17.5/收13.8-15.5；偏弱25%：开12.0-14.2/收12.0-13.8；强势20%：开16.2-18.0/收15.5-17.2。",
+        note: "发行价11.13元；2026-08-19上市；启用绿鞋后网上发行3231.8326万股，发行前老股首日流通为0。盘前估值只作参考：开盘超出预测上沿10%或溢价达到70%时自动切换超预期动量模式，禁用16元静态清仓线。守住开盘价与VWAP且换手扩张时继续观察；临停冻结09:40时限，复牌后按峰值回撤和关键位处理。不要机械挂开盘×1.08后一直不撤。"
+      },
+      "920107": {
+        name: "恒兴股份",
+        conservative: [34, 39],
+        mainstream: [42, 47],
+        hot: [50, 57],
+        extreme: 60,
+        dream: 75,
+        valuationWatch: 50,
+        forecastOpen: [42, 47],
+        forecastLow: [36, 42],
+        forecastHigh: [50, 57],
+        forecastClose: [41, 48],
+        oldShareRatio: 0,
+        scenarioText: "基准60%：开42-47/高50-57/收41-48；偏弱20%：开34-39/高40-46/收33-40；强势20%：开52-60/高65-78/收50-66。",
+        note: "发行价16.02元；2026-08-17上市；首日流通1887.30万股且无老股首日解禁。50元以上进入高情绪区，60元以上重点防冲高回落，不设机械清仓价。"
+      },
+      "920138": {
+        name: "杰理科技",
+        conservative: [40, 48],
+        mainstream: [48, 60],
+        hot: [60, 66],
+        extreme: 66,
+        dream: 75.44,
+        valuationWatch: 66,
+        forecastOpen: [45, 60],
+        forecastLow: [40, 52],
+        forecastHigh: [58, 80],
+        forecastClose: [48, 65],
+        oldShareRatio: 14.20,
+        scenarioText: "基准预案：开45-60/高58-68/收48-65；偏弱预案：开38-45/收40-48；强势预案：开60-66/高66-75.44；75.44元以上只作极端情绪尾部观察。",
+        note: "发行价18.86元；首日流通3461.3757万股，老股491.3757万股占14.20%；合理收盘区48-65元、中枢54-60元，66元起进入高估值情绪区，不设机械清仓价。"
+      },
+      "920165": {
+        name: "珈凯生物",
+        conservative: [36, 44],
+        mainstream: [44, 53],
+        hot: [53, 62],
+        extreme: 70,
+        dream: 80,
+        valuationWatch: 60.75,
+        forecastOpen: [44, 53],
+        forecastLow: [34, 43],
+        forecastHigh: [50, 80],
+        forecastClose: [42, 54],
+        oldShareRatio: 32.15,
+        disableAuctionHardThreshold: true,
+        turnoverBands: {
+          5: [17.47, 28.60],
+          10: [22.60, 35.49],
+          15: [27.29, 38.96],
+          20: [30.69, 43.81],
+          30: [37.88, 50.41],
+          60: [48.24, 63.74]
+        },
+        scenarioText: "中性50%：开44-53/高50-62/收42-54；偏弱25%：开36-44/收34-43；强势20%：开53-62/高62-80；临停爆炒尾部5%。",
+        note: "发行价19.26元；首日流通960.5041万股，老股308.8003万股占32.15%；62元为高估值观察区，不是自动清仓价。"
+      },
+      "920038": {
+        name: "森合高科",
+        conservative: [42, 48],
+        mainstream: [48, 62],
+        hot: [62, 68],
+        extreme: 69,
+        dream: 72,
+        note: "基准估值中枢约55元；首日流通3416.6081万股，其中老股1696.42万股，60元以上重点防冲高回落。"
+      },
+      "920189": {
+        name: "康美特",
+        conservative: [34, 37.5],
+        mainstream: [39, 44],
+        hot: [45, 54],
+        extreme: 56,
+        dream: 60,
+        note: "文章预测偏高情绪，需用9:25竞价换手与9:30承接确认；老股流通比例高，45元以上不宜格局。"
+      }
+    };
+
+    const localProfileOverrides = {
+      "920059": {
+        code: "920059",
+        name: "双英集团",
+        issuePrice: 11.13,
+        issuePe: 12.99,
+        industryPe: 31.50,
+        peDiscount: 58.8,
+        industry: "汽车制造业（汽车座椅及内外饰件）",
+        mainBusiness: "汽车座椅、汽车内外饰件的研发、生产和销售",
+        industryHeat: 0,
+        listingDate: "2026-08-19",
+        issueShares: 43724794,
+        enquiryAccounts: 706796,
+        firstDayTradableShares: 32318326,
+        denominatorSource: "发行结果公告（2026-08-12）：启用绿鞋后网上发行3,231.8326万股；发行前老股首日流通0股",
+        denominatorVerified: true,
+        firstDayUnlock: false,
+        estimatedOldShareRatioOfTradable: 0,
+        strategicPlacementShares: 11406468,
+        strategicPlacementLockMonths: 6,
+        valuationSummary: "发行价11.13元、公告发行PE 12.99倍（绿鞋全额摊薄后约13.5倍）。盘前14.2-16.2元区间仅作估值参考；实际开盘超出预测上沿10%或发行价溢价达到70%时，自动进入超预期动量模式，静态价格线不再触发清仓。",
+        notes: "8月19日上午实盘复盘：20.88元开盘后两次临停，静态16元清仓线已停用。守住开盘价与VWAP且换手扩张时继续观察；临停冻结时间止盈，复牌后按峰值回撤和关键位处理。当日同时申购金钛股份（920071，9.72元），申购资金应独立安排。"
+      },
+      "920107": {
+        code: "920107",
+        name: "恒兴股份",
+        issuePrice: 16.02,
+        issuePe: 13.67,
+        industryPe: 28.52,
+        peDiscount: 52.07,
+        industry: "化学原料和化学制品制造业（UV固化涂料）",
+        mainBusiness: "紫外光（UV）固化涂料和PUR热熔胶的研发、生产与销售",
+        industryHeat: 1,
+        listingDate: "2026-08-17",
+        issueShares: 20970000,
+        enquiryAccounts: 774853,
+        firstDayTradableShares: 18873000,
+        denominatorSource: "北交所上市公告书（2026-08-13）：发行后无限售流通股1,887.30万股",
+        denominatorVerified: true,
+        firstDayUnlock: false,
+        estimatedOldShareRatioOfTradable: 0,
+        strategicPlacementShares: 2097000,
+        strategicPlacementLockMonths: 12,
+        valuationSummary: "发行价16.02元、发行后扣非PE 13.67倍；网上有效申购4,069.70倍、77.49万户。基准开盘42-47元、盘中高点50-57元、收盘41-48元；50元以上按高情绪区管理，60元以上重点防冲高回落。",
+        notes: "2026-08-17上市；首日流通1,887.30万股，全部为网上发行新股，无发行前老股首日解禁。预期区间只作盘前锚，卖出仍由实时价格、VWAP、高点回撤、开盘价与核验换手共同确认。"
+      },
+      "920138": {
+        code: "920138",
+        name: "杰理科技",
+        issuePrice: 18.86,
+        issuePe: 14.99,
+        industryPe: 73.78,
+        peDiscount: 79.68,
+        industry: "软件和信息技术服务业（SoC集成电路设计）",
+        mainBusiness: "蓝牙音视频、智能穿戴与智能物联终端SoC芯片设计",
+        industryHeat: 2,
+        listingDate: "2026-08-12",
+        firstDayTradableShares: 34613757,
+        denominatorSource: "上市公告书（2026-08-10）：首日无限售流通股3,461.3757万股",
+        denominatorVerified: true,
+        firstDayUnlock: true,
+        estimatedOldShareRatioOfTradable: 14.20,
+        valuationSummary: "发行价18.86元、2025年扣非PE 14.99倍；申购67.75万户、网上有效申购2,510.68倍；2026年预测扣非EPS约1.331元。合理收盘区48-65元、中枢54-60元；66元起进入高估值情绪区，75.44元为极端观察线，不设机械目标价。",
+        notes: "申购67.75万户、网上有效申购2,510.68倍；首日流通3,461.3757万股，其中老股491.3757万股（14.20%）。行业平均PE不能机械套用；卖出以VWAP、开盘价、回撤和核验换手共同确认。"
+      },
+      "920165": {
+        code: "920165",
+        name: "珈凯生物",
+        issuePrice: 19.26,
+        issuePe: 14.98,
+        industryPe: 29.26,
+        peDiscount: 48.80,
+        industry: "化学原料和化学制品制造业（化妆品功效原料）",
+        mainBusiness: "化妆品功效原料的研发、生产与销售",
+        industryHeat: 2,
+        listingDate: "2026-08-11",
+        firstDayTradableShares: 9605041,
+        denominatorSource: "北交所上市公告书（2026-08-07，第40、49、51页）",
+        denominatorVerified: true,
+        firstDayUnlock: true,
+        valuationSummary: "首日流通960.5041万股，其中老股308.8003万股（32.15%）；基础开盘44-53元、盘中高点50-62元、收盘42-54元；62元仅作高估值观察，不设机械清仓价。"
+      }
+    };
+
+    function priceProfileFor(s) {
+      const code = String(s.code || "").replace(/\D/g, "");
+      return priceProfiles[code] || null;
+    }
+
+    function priceBand(profile, price) {
+      if (!profile || !(price > 0)) return null;
+      if (price < profile.conservative[0]) return "低于高预期区";
+      if (price <= profile.conservative[1]) return "保守低价区";
+      if (price < profile.mainstream[0]) return "保守至主流过渡区";
+      if (price <= profile.mainstream[1]) return "主流中性区";
+      if (price <= profile.hot[1]) return "情绪乐观区";
+      if (price >= profile.dream) return "极端梦想区";
+      if (price >= profile.extreme) return "中介高估锚附近";
+      return "高情绪过渡区";
+    }
+
+    function tradingMinutesSinceOpen(minutes) {
+      if (!Number.isFinite(minutes) || minutes < 570) return 0;
+      if (minutes < 690) return minutes - 570;
+      if (minutes < 780) return 120;
+      return Math.min(240, 120 + minutes - 780);
+    }
+
+    function openingTurnoverBandFor(s) {
+      const elapsed = tradingMinutesSinceOpen(s.minutes);
+      const value = Number.isFinite(s.turnover30)
+        ? s.turnover30
+        : (elapsed > 0 && elapsed <= 30 && Number.isFinite(s.turnover) ? s.turnover : NaN);
+      const provisional = Number.isFinite(value) && !s.openingTurnover30Final && elapsed < 30;
+      if (!Number.isFinite(value)) {
+        return {
+          key:"missing",
+          rank:-1,
+          label:elapsed < 30 ? "采集中" : "待补充",
+          note:elapsed < 30 ? "10:00附近锁定开盘30分钟累计换手" : "未捕获10:00快照，可手动补充",
+          value,
+          provisional
+        };
+      }
+      if (value < 30) {
+        return {key:"low", rank:0, label:"低关注", note:"低于30%，换手偏弱但不等于必须卖出", value, provisional};
+      }
+      if (value < 40) {
+        return {key:"normal", rank:1, label:"常态活跃", note:"30%—40%，主要由价格结构决定去留", value, provisional};
+      }
+      if (value < 50) {
+        return {key:"active", rank:2, label:"高度活跃", note:"40%—50%，只在价格转弱时增强卖出信号", value, provisional};
+      }
+      return {key:"extreme", rank:3, label:"极高关注", note:"达到50%，具备爆发条件，也存在拥挤兑现风险", value, provisional};
+    }
+
+    function turnoverStructureFor(s, vwapSignals = {}) {
+      const elapsed = tradingMinutesSinceOpen(s.minutes);
+      const velocity = s.turnover > 0 && elapsed > 0
+        ? s.turnover / Math.max(1, elapsed)
+        : NaN;
+      const band = openingTurnoverBandFor(s);
+      if (!s.turnoverVerified) {
+        return {
+          key:"unverified",
+          label:"换手口径待核验",
+          note:"尚未确认首日实际可交易股数，换手阈值不参与强卖出判断",
+          active:false,
+          velocity,
+          band
+        };
+      }
+      const active = band.rank >= 2
+        || (Number.isFinite(velocity) && velocity >= 1)
+        || (s.auctionRatio >= 5 && s.turnover >= 10)
+        || s.turnover >= 50;
+      const aboveKey = s.current > 0
+        && s.open > 0
+        && s.current >= s.open
+        && s.vwap > 0
+        && s.current >= s.vwap;
+      const belowKey = s.current > 0
+        && s.open > 0
+        && s.current < s.open
+        && s.vwap > 0
+        && s.current < s.vwap;
+      const orderly = !Number.isFinite(s.pullback) || s.pullback < 5;
+      const weaknessConfirmed = Boolean(vwapSignals.sustainedBelow || vwapSignals.reboundFailed)
+        || (Number.isFinite(s.pullback) && s.pullback >= 8);
+
+      if (active && aboveKey && orderly) {
+        return {
+          key:"strong",
+          label:band.rank >= 3 ? "极高关注·强承接" : "活跃强承接",
+          note:`${band.label}，同时守住开盘价与VWAP且价格保持度高`,
+          active,
+          velocity,
+          band
+        };
+      }
+      if (active && belowKey && weaknessConfirmed) {
+        return {
+          key:"distribution",
+          label:band.rank >= 3 ? "极高换手·派发" : "活跃派发",
+          note:`${band.label}，但开盘价与VWAP双破且价格保持度下降`,
+          active,
+          velocity,
+          band
+        };
+      }
+      if (band.key === "low" && belowKey && weaknessConfirmed) {
+        return {
+          key:"weakDemand",
+          label:"低换手·弱承接",
+          note:"开盘30分钟换手低于30%，同时跌破开盘价与VWAP",
+          active:false,
+          velocity,
+          band
+        };
+      }
+      if (band.key === "low" && aboveKey && orderly) {
+        return {
+          key:"lowHold",
+          label:"低换手·价格稳",
+          note:"换手偏低但价格守住开盘价与VWAP，可能是惜售结构",
+          active:false,
+          velocity,
+          band
+        };
+      }
+      if (active && s.vwap > 0 && s.current < s.vwap) {
+        return {
+          key:"weak",
+          label:"活跃转弱",
+          note:"换手活跃但位于VWAP下方，等待持续失守或反抽失败确认",
+          active,
+          velocity,
+          band
+        };
+      }
+      if (active) {
+        return {
+          key:"mixed",
+          label:"活跃待确认",
+          note:"换手活跃，但价格位置尚未形成一致结论",
+          active,
+          velocity,
+          band
+        };
+      }
+      return {
+        key:"normal",
+        label: band.key === "normal" ? "常态换手·待确认" : (elapsed > 0 ? "常态观察" : "等待开盘"),
+        note:band.note || "不使用单一换手阈值触发卖出",
+        active:false,
+        velocity,
+        band
+      };
+    }
+
+    function auctionOpeningSetupFor(s) {
+      const profile = priceProfileFor(s);
+      const extremePremium = Number.isFinite(s.openPct) && s.openPct >= 250;
+      const neutralTurnover = s.auctionRatio >= 3 && s.auctionRatio <= 6;
+      const bearishBook = s.auctionBookVerified
+        && Number.isFinite(s.auctionImbalance)
+        && s.auctionImbalance <= -20;
+      const dataReady = Boolean(
+        s.denominatorVerified
+        && s.auctionBookVerified
+        && s.dataFresh
+      );
+      const eligible = !profile?.disableAuctionHardThreshold
+        && extremePremium && neutralTurnover && bearishBook && dataReady;
+      const openingWindow = s.minutes >= 570 && s.minutes < 571;
+      const openingImproved = s.open > 0 && s.current >= s.open * 1.01;
+      const openingNotImproved = s.open > 0 && s.current <= s.open * 1.005;
+      return {
+        extremePremium,
+        neutralTurnover,
+        bearishBook,
+        dataReady,
+        eligible,
+        openingWindow,
+        openingImproved,
+        openingNotImproved,
+        confirmed: eligible && openingWindow && openingNotImproved,
+        cancelled: eligible && s.minutes >= 570 && openingImproved,
+      };
+    }
+
+    function planFor(s, type, vwapSignals = {}) {
+      const open = s.open, vwap = s.vwap;
+      const trailing5 = s.high > 0 ? s.high * .95 : NaN;
+      const dynamicGuard = Math.max(vwap || 0, trailing5 || 0);
+      const frozenVwap = Number(vwapSignals.triggerPrice);
+      const hardExecutionLabel = Number.isFinite(frozenVwap) && frozenVwap > 0
+        ? `触发时实时价｜首次失守VWAP ${fmtPrice(frozenVwap)} 已冻结`
+        : "触发时实时价｜未确认前不挂单";
+      const profile = priceProfileFor(s);
+      const auctionSetup = auctionOpeningSetupFor(s);
+      const withTargetPlan = rows => s.targetPrice > 0
+        ? [["目标执行档", `预设目标价 ${fmtPrice(s.targetPrice)} 进入可成交区即执行，不因期待继续上涨撤单`, s.targetPrice, 100, `${fmtPrice(s.targetPrice)}｜预挂/保留卖单`], ...rows]
+        : rows;
+      const withAuctionPlan = rows => {
+        const targetRows = withTargetPlan(rows);
+        return auctionSetup.eligible
+          ? [["9:25预案档", "极端溢价+竞价换手3%-6%+五档卖压；仅在9:30未转强时兑现", open, 30, `竞价基准 ${fmtPrice(open)}｜9:25不挂单`], ...targetRows]
+          : targetRows;
+      };
+      if (profile && (type === "A" || type === "B")) {
+        const band = priceBand(profile, open);
+        const overheated = band === "情绪乐观区" || band === "中介高估锚附近" || band === "极端梦想区";
+        const tightGuard = s.high > 0 ? s.high * .97 : NaN;
+        const profileGuard = Math.max(vwap || 0, overheated ? (tightGuard || 0) : (trailing5 || 0));
+        return withAuctionPlan([
+          ["确认档", "9:30-9:35确认承接，竞价强不等于马上卖", open, 0, "条件观察｜不产生卖出数量"],
+          ["估值观察档", "进入静态估值区只提示位置，不直接产生卖出数量", profile.valuationWatch || profile.mainstream[0], 0, "估值位置｜不产生卖出数量"],
+          ["有效转弱档", overheated ? "过热估值区且跌破VWAP持续确认/反抽失败" : "高点回撤并有效跌破VWAP", profileGuard || dynamicGuard || vwap || open, 50, `${fmtPrice(profileGuard || dynamicGuard || vwap || open)}｜动态预警，不是委托价`],
+          ["硬退出档", "开盘价与VWAP双破，且持续失守或反抽失败", s.current || vwap || open, 100, hardExecutionLabel]
+        ]);
+      }
+      if (type === "A") return withAuctionPlan([
+        ["确认档", "9:30-9:35先看承接，强势不卖", open, 0, "条件观察｜不产生卖出数量"],
+        ["强承接档", "换手活跃且守住开盘价与VWAP，继续观察", Math.max(open, vwap || 0), 0, "条件观察｜不挂单"],
+        ["有效转弱档", "高点回撤且VWAP持续失守/反抽失败", dynamicGuard || vwap || open, 50, `${fmtPrice(dynamicGuard || vwap || open)}｜动态预警，不是委托价`],
+        ["硬退出档", "开盘价与VWAP双破并确认", s.current || vwap || open, 100, hardExecutionLabel]
+      ]);
+      if (type === "B") return withAuctionPlan([
+        ["确认档", "9:30-9:35先看承接", open, 0, "条件观察｜不产生卖出数量"],
+        ["强承接档", "换手与价格结构共振向上，不按固定涨幅卖", Math.max(open, vwap || 0), 0, "条件观察｜不挂单"],
+        ["有效转弱档", "高点回撤且VWAP持续失守/反抽失败", dynamicGuard || vwap || open, 50, `${fmtPrice(dynamicGuard || vwap || open)}｜动态预警，不是委托价`],
+        ["硬退出档", "开盘价与VWAP双破并确认", s.current || vwap || open, 100, hardExecutionLabel]
+      ]);
+      if (type === "D") return [
+        ["风险确认档", "开盘破发后先确认是否同时跌破开盘价与VWAP", open || s.current, 0, "条件观察｜不产生卖出数量"],
+        ["首次减仓档", "双破确认后先降低一半风险敞口", s.current || open, 50, "触发时实时价"],
+        ["硬退出档", "持续失守VWAP且反抽失败后再处理剩余仓位", s.current || vwap || open, 50, hardExecutionLabel]
+      ];
+      return [
+        ["确认档", "价格守住开盘价与VWAP时继续观察，不因上涨或高换手主动卖出", Math.max(open, vwap || 0), 0, "条件观察｜不产生卖出数量"],
+        ["转弱档", "跌破VWAP并出现高点回撤，先降低风险敞口", vwap || open, 50, `${fmtPrice(vwap || open)}｜动态预警，不是委托价`],
+        ["硬退出档", "开盘价与VWAP双破，且持续失守或反抽失败", s.current || vwap || open, 100, hardExecutionLabel]
+      ];
+    }
+
+    function forecast(s) {
+      if (!(s.issue > 0)) return null;
+      const profile = priceProfileFor(s);
+      let premium = 150;
+      const factors = [];
+      let confidence = 40;
+
+      if (s.floatCap > 0) {
+        confidence += 15;
+        if (s.floatCap < 5) { premium += 110; factors.push("流通市值小于5亿，上调开盘溢价"); }
+        else if (s.floatCap <= 10) { premium += 45; factors.push("流通市值5-10亿，中等弹性"); }
+        else { premium -= 25; factors.push("流通市值大于10亿，下调溢价"); }
+      } else factors.push("流通市值缺失");
+
+      if (Number.isFinite(s.peDiscount)) {
+        confidence += 10;
+        if (s.peDiscount >= 50) { premium += 60; factors.push("PE折价超过50%"); }
+        else if (s.peDiscount >= 30) { premium += 30; factors.push("PE折价30%-50%"); }
+        else if (s.peDiscount < 15) { premium -= 20; factors.push("PE折价偏低"); }
+      } else factors.push("PE折价率缺失");
+
+      if (s.heat === 2) { premium += 55; factors.push("热门行业模型加分"); confidence += 5; }
+      else if (s.heat === 1) { premium += 20; factors.push("行业热度中等"); confidence += 5; }
+      else { premium -= 10; factors.push("行业热度偏低"); confidence += 5; }
+      if (s.unlock) { premium -= 20; factors.push("首日解禁因子下调"); }
+
+      premium = Math.max(-10, Math.min(600, premium));
+      const predictedOpen = s.issue * (1 + premium / 100);
+      const hasOpen = s.open > 0;
+      const openMid = hasOpen ? s.open : (profile ? (profile.mainstream[0] + profile.mainstream[1]) / 2 : predictedOpen);
+      const openLow = hasOpen ? s.open : (profile?.forecastOpen ? profile.forecastOpen[0] : (profile ? profile.conservative[0] : predictedOpen * .85));
+      const openHigh = hasOpen ? s.open : (profile?.forecastOpen ? profile.forecastOpen[1] : (profile ? profile.mainstream[1] : predictedOpen * 1.15));
+      if (hasOpen) { confidence += 15; factors.push("已用实际开盘价校准"); }
+      if (profile && !hasOpen) { confidence += 8; factors.push(`${profile.name}高情绪预测档：保守${profile.conservative[0]}-${profile.conservative[1]}元，主流${profile.mainstream[0]}-${profile.mainstream[1]}元`); }
+
+      const synthetic = {...s, open: openMid, openPct: (openMid / s.issue - 1) * 100};
+      const type = classify(synthetic);
+      const ranges = {
+        A: {low:[.72,.92,.83], high:[1.05,1.35,1.17]},
+        B: {low:[.78,.95,.88], high:[1.08,1.35,1.18]},
+        C: {low:[.82,.98,.91], high:[1.00,1.22,1.10]},
+        D: {low:[.75,.98,.88], high:[.98,1.12,1.04]}
+      }[type];
+
+      let lowLow = openMid * ranges.low[0], lowHigh = openMid * ranges.low[1], lowMid = openMid * ranges.low[2];
+      let highLow = openMid * ranges.high[0], highHigh = openMid * ranges.high[1], highMid = openMid * ranges.high[2];
+      if (s.heat === 2) { highHigh *= 1.05; highMid *= 1.03; }
+      if (s.unlock) { lowLow *= .95; highHigh *= .95; }
+      if (profile && !hasOpen) {
+        if (profile.forecastLow) {
+          lowLow = profile.forecastLow[0];
+          lowHigh = profile.forecastLow[1];
+          lowMid = (lowLow + lowHigh) / 2;
+        }
+        highLow = profile.forecastHigh ? profile.forecastHigh[0] : Math.max(highLow, profile.hot[0]);
+        highHigh = profile.forecastHigh ? profile.forecastHigh[1] : Math.max(highHigh, profile.hot[1]);
+        highMid = (highLow + highHigh) / 2;
+        if (profile.scenarioText) factors.push(profile.scenarioText);
+      }
+
+      if (s.low > 0) {
+        lowLow = Math.min(lowLow, s.low);
+        lowHigh = Math.min(lowHigh, s.low);
+        lowMid = Math.min(lowMid, s.low);
+        confidence += 5;
+      }
+      if (s.high > 0) {
+        highLow = Math.max(highLow, s.high);
+        highHigh = Math.max(highHigh, s.high);
+        highMid = Math.max(highMid, s.high);
+        confidence += 5;
+      }
+
+      return {
+        type,
+        open: {mid:openMid, low:openLow, high:openHigh, confirmed:hasOpen},
+        low: {mid:lowMid, low:lowLow, high:lowHigh},
+        high: {mid:highMid, low:highLow, high:highHigh},
+        confidence: Math.min(90, confidence),
+        premium,
+        factors
+      };
+    }
+
+    function inferAutomaticHaltState(s) {
+      if (s.haltState && s.haltState !== "auto") return s.haltState;
+      if (!(s.open > 0) || !(s.current > 0)) return "normal";
+      const halt30 = s.open * 1.30;
+      const halt60 = s.open * 1.60;
+      const tolerance = price => Math.max(0.02, price * 0.0015);
+      const at30 = Math.abs(s.current - halt30) <= tolerance(halt30);
+      const at60 = Math.abs(s.current - halt60) <= tolerance(halt60);
+      const frozenAtThreshold = Boolean(s.quoteFrozen)
+        || (!s.dataFresh && Number(s.unchangedSeconds || 0) >= 15);
+
+      if (frozenAtThreshold && at60) {
+        autoHaltLevel = 60;
+        autoHaltResumeMinute = NaN;
+        return "halted60";
+      }
+      if (frozenAtThreshold && at30) {
+        autoHaltLevel = 30;
+        autoHaltResumeMinute = NaN;
+        return "halted30";
+      }
+      if (autoHaltLevel && s.dataFresh) {
+        if (!Number.isFinite(autoHaltResumeMinute)) autoHaltResumeMinute = s.minutes;
+        if (s.minutes <= autoHaltResumeMinute + 2) {
+          return autoHaltLevel === 60 ? "resumed60" : "resumed30";
+        }
+        autoHaltLevel = 0;
+        autoHaltResumeMinute = NaN;
+      }
+      if (s.current >= s.open * 1.59 && s.current < halt60) return "near60";
+      if (s.current >= s.open * 1.29 && s.current < halt30) return "near30";
+      return "normal";
+    }
+
+    function decide(s) {
+      s = {...s, haltState:inferAutomaticHaltState(s)};
+      const type = classify(s), reasons = [];
+      const mustExitDayOne = true;
+      const profile = priceProfileFor(s);
+      const vwapSignals = updateVwapSignalState(s);
+      const openingRangeSignals = updateOpeningRangeState(s);
+      const plan = planFor(s, type, vwapSignals);
+      if (Number.isFinite(openingRangeSignals.level) && openingRangeSignals.level > 0) {
+        plan.splice(2, 0, [
+          "首轮冲高回落档",
+          "开盘涨幅40%-150%，首轮上冲至少5%后回撤3.5%并跌到VWAP下方",
+          openingRangeSignals.level,
+          50,
+          `${fmtPrice(openingRangeSignals.level)}｜开盘15分钟高点，9:45冻结`,
+        ]);
+        plan.splice(3, 0, [
+          "二次突破尾仓档",
+          "余仓重新站上开盘15分钟高点与VWAP后转入移动止盈",
+          openingRangeSignals.tailGuard || openingRangeSignals.level,
+          100,
+          openingRangeSignals.secondaryBreakoutActive
+            ? `${fmtPrice(openingRangeSignals.tailGuard)}｜峰值5%回撤处理余仓`
+            : `${fmtPrice(openingRangeSignals.level)}｜未突破前不启用`,
+        ]);
+      }
+      const turnoverStructure = turnoverStructureFor(s, vwapSignals);
+      const auctionOpeningSetup = auctionOpeningSetupFor(s);
+      const targetConfigured = s.targetPrice > 0;
+      const targetTouched = targetConfigured && s.high >= s.targetPrice;
+      const targetAtMarket = targetTouched
+        && s.minutes >= 570
+        && s.current >= s.targetPrice * .995;
+      const turnoverExpandedAfterTarget = s.turnoverVerified && (
+        (Number.isFinite(s.turnoverDelta5) && s.turnoverDelta5 >= 2)
+        || (s.auctionRatio > 0 && s.turnover - s.auctionRatio >= 5)
+        || (!Number.isFinite(s.turnoverDelta5) && !(s.auctionRatio > 0) && s.turnover >= 10)
+      );
+      const targetFadeWarning = targetTouched
+        && s.minutes >= 570
+        && Number.isFinite(s.pullback)
+        && s.pullback >= 3;
+      const targetFadeConfirmed = targetFadeWarning
+        && s.pullback >= 5
+        && turnoverExpandedAfterTarget;
+      const targetFadeSevere = targetFadeConfirmed
+        && (s.pullback >= 8 || (s.vwap > 0 && s.current < s.vwap));
+      const targetSignals = {
+        configured:targetConfigured,
+        touched:targetTouched,
+        atMarket:targetAtMarket,
+        fadeWarning:targetFadeWarning,
+        fadeConfirmed:targetFadeConfirmed,
+        severe:targetFadeSevere,
+        turnoverExpanded:turnoverExpandedAfterTarget,
+      };
+      const firstMinuteFailure = s.minutes >= 571
+        && s.minutes < 575
+        && s.open > 0
+        && s.current <= s.open * .95
+        && s.vwap > 0
+        && s.currentVsVwap <= -3
+        && Number.isFinite(s.pullback)
+        && s.pullback >= 6;
+      const openingActionLocked = s.minutes >= 570 && s.minutes < 575 && !firstMinuteFailure;
+      const drawdownActive = s.minutes >= 575
+        && (
+          Number.isFinite(s.highVsOpen) && s.highVsOpen >= 10
+          || s.haltState === "resumed30"
+          || s.haltState === "resumed60"
+        )
+        || firstMinuteFailure;
+      let risk = 0, strength = 52;
+      const add = (level, text, r, st = 0) => { reasons.push({level,text}); risk += r; strength += st; };
+      if (!s.code) add("warn", "请先输入证券代码。", 10, -5);
+      if (!(s.issue > 0)) add("warn", "发行价缺失，开盘涨幅与情景分类精度下降。", 15, -8);
+      if (!(s.open > 0) || !(s.current > 0)) add("warn", "等待集合竞价或实时行情。", 8, -4);
+      if (!(s.floatCap > 0)) add("warn", "流通市值缺失，A/B 类判断暂以开盘涨幅为主。", 4, 0);
+      if (!(s.tradableShares > 0)) {
+        add("warn", "首日实际可交易股数未配置：当前换手口径不参与强卖出判断。", 2, 0);
+      } else if (!s.denominatorVerified) {
+        add("warn", `已录入首日流通盘 ${(s.tradableShares / 10000).toFixed(2)} 万股，但尚未按上市公告核验。`, 2, 0);
+      } else {
+        add("good", `首日流通盘 ${(s.tradableShares / 10000).toFixed(2)} 万股已核验，自定义累计换手口径生效。`, -2, 2);
+      }
+      if (s.position > 0 && s.position < 200) {
+        add(
+          "warn",
+          s.singleLotMode === "return"
+            ? "当前为100股单手收益优先模式：仅当严格9:25组合预案在9:30确认时允许一次性卖出；其余软信号仍不卖。"
+            : "当前为100股单手容错优先模式：软信号不卖，只有硬退出双确认后一次性卖出。",
+          0,
+          0
+        );
+      }
+
+      if (s.openPct >= 300) add("bad", `开盘涨幅 ${fmtPct(s.openPct)}，属于极端高开。`, 24, -10);
+      else if (s.openPct >= 150) add("warn", `开盘涨幅 ${fmtPct(s.openPct)}，进入中等以上热度区间。`, 12, -3);
+      else if (s.openPct < 0) add("bad", `开盘涨幅 ${fmtPct(s.openPct)}，触发破发情景。`, 35, -20);
+
+      if (profile) {
+        if (s.open > 0) {
+          const band = priceBand(profile, s.open);
+          if (s.open >= profile.hot[0]) add("bad", `${profile.name}开盘位于${band}：${fmtPrice(profile.hot[0])}元以上进入高情绪区，必须用VWAP和高点回撤保护。`, 18, -8);
+          else if (s.open >= profile.mainstream[0]) add("warn", `${profile.name}开盘位于${band}：符合高情绪主流预期，先看3-5分钟承接。`, 6, 2);
+          else if (s.open >= profile.conservative[0]) add("good", `${profile.name}开盘位于${band}：相对不过热，可等待首轮冲高确认。`, -3, 5);
+          else add("warn", `${profile.name}开盘低于${fmtPrice(profile.conservative[0])}元弱势情景下沿，不能机械等待反弹目标。`, 8, -4);
+        } else {
+          add("warn", `已载入${profile.name}专案：保守${profile.conservative[0]}-${profile.conservative[1]}元，主流${profile.mainstream[0]}-${profile.mainstream[1]}元，高情绪${profile.hot[0]}-${profile.hot[1]}元。`, 2, 0);
+        }
+        if (profile.note) add("warn", profile.note, 0, 0);
+      }
+
+      if (s.floatCap > 0 && s.floatCap < 5) add("warn", `流通市值 ${s.floatCap.toFixed(2)} 亿，波动弹性和回撤风险都较高。`, 8, 4);
+      if (s.floatCap > 10) add("warn", `流通市值 ${s.floatCap.toFixed(2)} 亿，冲高弹性通常受限。`, 8, -4);
+      if (s.peDiscount >= 50) add("good", `发行 PE 折价率 ${s.peDiscount.toFixed(0)}%，安全垫因子偏强。`, -6, 8);
+      if (s.heat === 2) add("good", "行业热度设为热门赛道，溢价因子加分。", -4, 6);
+      if (s.unlock) add("bad", "存在首日同步解禁，冲高后的抛压风险上调。", 14, -8);
+
+      if (s.current > 0 && s.open > 0 && s.current < s.open) {
+        if (openingActionLocked) add("warn", "开盘价格发现阶段暂时低于开盘价，仅记录波动，不作为卖出确认。", 3, -2);
+        else add("bad", "当前价跌破开盘价，强弱分界失守。", 24, -14);
+      }
+      if (s.current > 0 && s.vwap > 0 && s.currentVsVwap <= -1) {
+        if (openingActionLocked) add("warn", `开盘价格发现阶段暂低于 VWAP ${fmtPct(s.currentVsVwap)}，等待首根5分钟线确认。`, 3, -2);
+        else add("bad", `当前价低于 VWAP ${fmtPct(s.currentVsVwap)}，达到1%有效跌破阈值。`, 18, -10);
+      } else if (s.current > 0 && s.vwap > 0 && s.current < s.vwap) {
+        add("warn", `当前价小幅低于 VWAP ${fmtPct(s.currentVsVwap)}，尚未达到1%有效跌破。`, 7, -3);
+      } else {
+        if (s.current > 0 && s.vwap > 0) add("good", `当前价重新站上 VWAP ${fmtPct(s.currentVsVwap)}。`, -6, 8);
+      }
+      if (vwapSignals.sustainedBelow) {
+        add("bad", `跌破 VWAP 超过1%且连续5分钟未收回，触发生命线离场规则；首次失守判定线 ${fmtPrice(vwapSignals.triggerPrice)} 已冻结。`, 30, -16);
+      }
+      if (vwapSignals.reboundFailed) {
+        add("bad", `跌破VWAP后的反弹尝试未能在3分钟内站稳均价线，确认反抽失败；沿用冻结判定线 ${fmtPrice(vwapSignals.triggerPrice)}。`, 30, -16);
+      }
+      if (firstMinuteFailure) {
+        add("bad", `首分钟承接失败：较开盘下跌 ${fmtPct(s.currentVsOpen)}、低于VWAP ${fmtPct(s.currentVsVwap)}、高点回撤 ${s.pullback.toFixed(1)}%。`, 38, -20);
+      }
+      if (profile?.disableAuctionHardThreshold && s.auctionRatio > 0) {
+        add("warn", `珈凯生物竞价换手 ${s.auctionRatio.toFixed(2)}%：纯9:25历史样本不足，仅展示活跃度，不使用7%/12%硬阈值触发卖出。`, 0, 0);
+      } else if (s.auctionRatio >= 8) {
+        add("warn", `竞价换手 ${s.auctionRatio.toFixed(2)}%，属于极端博弈；高换手同时代表强承接与集中兑现，需等待开盘确认。`, 8, 0);
+      } else if (s.auctionRatio >= 5) {
+        add("warn", `竞价换手 ${s.auctionRatio.toFixed(2)}%，属于高度活跃，不能仅凭高换手直接卖出。`, 3, 3);
+      } else if (s.auctionRatio >= 3) {
+        add("warn", `竞价换手 ${s.auctionRatio.toFixed(2)}%，属于3%—6%中性博弈区，不按“低于5%”判弱。`, 1, 1);
+      } else if (s.auctionRatio > 0 && s.auctionRatio < 3) {
+        add("warn", `竞价换手仅 ${s.auctionRatio.toFixed(2)}%，价格发现不充分、开盘可信度偏低；该指标只降低开盘判断置信度，不单独触发卖出。`, 8, -4);
+      }
+      if (targetAtMarket) {
+        add("warn", `预设目标价 ${fmtPrice(s.targetPrice)} 已进入可成交区：保留原卖单；若尚未成交，按当前盘口执行，不因期待继续上涨撤单。`, 8, 0);
+      } else if (targetFadeConfirmed) {
+        add("bad", `目标价已触达后从高点回撤 ${s.pullback.toFixed(1)}%，且换手继续扩张，确认冲高兑现。`, 34, -18);
+      } else if (targetFadeWarning) {
+        add("warn", `目标价已触达后从高点回撤 ${s.pullback.toFixed(1)}%，进入3%回撤预警；恢复/保留卖单，达到5%且换手扩张即退出。`, 14, -7);
+      }
+      if (Number.isFinite(s.auctionImbalance)) {
+        const direction = s.auctionImbalance <= -20 ? "卖压偏强" : (s.auctionImbalance >= 20 ? "买盘偏强" : "相对均衡");
+        add(
+          s.auctionBookVerified ? (s.auctionImbalance <= -20 ? "warn" : "good") : "warn",
+          `9:25五档订单失衡 ${s.auctionImbalance >= 0 ? "+" : ""}${s.auctionImbalance.toFixed(1)}%（${direction}）${s.auctionBookVerified ? "，盘口已核验" : "，但缺少精确TQ快照，仅作展示"}。`,
+          s.auctionBookVerified && s.auctionImbalance <= -20 ? 5 : 0,
+          s.auctionBookVerified && s.auctionImbalance >= 20 ? 3 : 0
+        );
+      }
+      if (auctionOpeningSetup.extremePremium && auctionOpeningSetup.neutralTurnover && !auctionOpeningSetup.dataReady) {
+        add("warn", "极端溢价且竞价换手处于中性区，但流通盘口径、9:25五档快照或数据新鲜度未通过；禁止生成开盘仓位建议。", 2, 0);
+      }
+      if (auctionOpeningSetup.eligible) {
+        add("bad", `9:25组合预案成立：开盘溢价 ${fmtPct(s.openPct)}、竞价换手 ${s.auctionRatio.toFixed(2)}%、订单失衡 ${s.auctionImbalance.toFixed(1)}%；仅准备开盘分批兑现，不自动全卖。`, 18, -8);
+      }
+      if (turnoverStructure.key === "strong") {
+        add("good", `换手与价格结构共振：${turnoverStructure.note}；高换手不作为卖出理由。`, -8, 12);
+      } else if (turnoverStructure.key === "distribution") {
+        add("bad", `换手与价格结构共振转弱：${turnoverStructure.note}。`, 24, -14);
+      } else if (turnoverStructure.key === "weakDemand") {
+        add("bad", `换手与价格结构共同偏弱：${turnoverStructure.note}，新增承接不足。`, 20, -12);
+      } else if (turnoverStructure.key === "lowHold") {
+        add("good", `换手偏低但价格保持稳定：${turnoverStructure.note}；不因低换手抢跑卖出。`, -4, 7);
+      } else if (turnoverStructure.key === "weak") {
+        add("warn", `换手活跃但价格转弱：${turnoverStructure.note}。`, 8, -4);
+      } else if (turnoverStructure.key === "mixed") {
+        add("warn", `换手活跃但方向待确认：${turnoverStructure.note}。`, 2, 1);
+      } else if (turnoverStructure.key === "unverified") {
+        add("warn", turnoverStructure.note, 0, 0);
+      }
+      if (s.turnoverVerified && Number.isFinite(s.turnoverDelta5)) {
+        const deltaText = s.turnoverDelta5.toFixed(2);
+        if (s.turnoverDelta5 >= 5 && s.current >= s.open && s.current >= s.vwap) {
+          add("good", `最近5分钟新增换手 ${deltaText}%，价格仍守住开盘价与VWAP；只记录为动量增强，不直接卖出。`, 0, 2);
+        } else if (s.turnoverDelta5 >= 5 && s.current < s.open && s.current < s.vwap) {
+          add("warn", `最近5分钟新增换手 ${deltaText}%，但价格同时跌破开盘价与VWAP；量增价弱，需提高警惕。`, 2, -1);
+        } else {
+          add("warn", `最近5分钟新增换手 ${deltaText}%，作为量价辅助指标观察。`, 0, 0);
+        }
+      }
+      if (turnoverStructure.band && Number.isFinite(turnoverStructure.band.value)) {
+        const bandValue = turnoverStructure.band.value.toFixed(1);
+        const bandStage = turnoverStructure.band.provisional ? "实时进度" : "锁定值";
+        add(
+          "warn",
+          `开盘30分钟换手${bandStage} ${bandValue}%（${turnoverStructure.band.label}）：${turnoverStructure.band.note}。`,
+          0,
+          0
+        );
+      }
+      if (profile?.turnoverBands && s.turnoverVerified && s.turnover >= 0) {
+        const elapsed = tradingMinutesSinceOpen(s.minutes);
+        const checkpoints = [5, 10, 15, 20, 30, 60];
+        const checkpoint = checkpoints.filter(item => elapsed >= item).pop();
+        const bounds = checkpoint ? profile.turnoverBands[checkpoint] : null;
+        if (bounds && elapsed <= checkpoint + 4) {
+          const label = s.turnover < bounds[0] ? "偏低" : (s.turnover > bounds[1] ? "偏高" : "正常");
+          add("warn", `${checkpoint}分钟累计换手参考：${s.turnover.toFixed(1)}%为${label}区（历史四分位 ${bounds[0].toFixed(1)}%-${bounds[1].toFixed(1)}%）；必须结合开盘价、VWAP和高点结构判断。`, 0, 0);
+        }
+      }
+      if (s.turnover >= 92 && turnoverStructure.key !== "distribution") {
+        add("warn", `当前换手 ${s.turnover.toFixed(1)}%，交易拥挤；只有与价格破位共同出现时才升级为卖出信号。`, 3, -1);
+      }
+      if (drawdownActive && s.pullback >= 8) add("bad", `高点回撤 ${s.pullback.toFixed(1)}%，达到卖出级别。`, 22, -12);
+      else if (drawdownActive && s.pullback >= 5) add("warn", `高点回撤 ${s.pullback.toFixed(1)}%，适合减仓。`, 12, -5);
+      else if (!drawdownActive && s.pullback >= 5 && s.minutes >= 570) {
+        add("warn", `当前显示回撤 ${s.pullback.toFixed(1)}%，但尚未形成高于开盘10%的有效高点，移动止盈暂不启用。`, 2, 0);
+      }
+      if (s.notes) add("warn", `盘面备注：${s.notes}`, 3, 0);
+
+      const halt30 = s.open > 0 ? s.open * 1.30 : NaN;
+      const halt60 = s.open > 0 ? s.open * 1.60 : NaN;
+      const nearHalt = s.current > 0 && halt30 > 0 && s.current >= s.open * 1.29 && s.current < halt30;
+      const nearSecondHalt = s.current > 0 && halt60 > 0 && s.current >= s.open * 1.59 && s.current < halt60;
+      let haltState = s.haltState;
+      if (haltState === "auto") {
+        if (nearSecondHalt) haltState = "near60";
+        else if (nearHalt) haltState = "near30";
+        else haltState = "normal";
+      }
+      if (haltState === "near30" || haltState === "near60") add("good", "价格接近临停参考阈值，这是强动量事件；不把接近临停本身当作卖出理由，等待临停或复牌后的承接确认。", -8, 12);
+      if (haltState === "halted30" || haltState === "halted60") add("warn", "当前处于临停状态，暂停普通价格提示，等待复牌后重新评估。", 8, -4);
+      if (haltState === "resumed30" || haltState === "resumed60") add("warn", "当前为临停复牌观察期，若不能创新高或跌破VWAP，优先兑现。", 16, -6);
+
+      let nearest = "继续观察", sellPrice = s.vwap || s.open, ratio = 0, deadline = "14:45 前";
+      const auctionActive = Number.isFinite(s.auctionRatio) && s.auctionRatio >= 5;
+      const openingFloorHeld = !(s.low > 0) || s.low >= s.open * .99;
+      const openingStrong = openingFloorHeld
+        && s.current >= s.open
+        && (!(s.vwap > 0) || s.current >= s.vwap)
+        && (!Number.isFinite(s.pullback) || s.pullback < 3);
+      const auctionDump = auctionActive
+        && s.current <= s.open * .97
+        && s.vwap > 0
+        && s.current < s.vwap;
+      const lowExpectationOpen = Number.isFinite(s.openPct)
+        && s.openPct >= 40
+        && s.openPct < 150
+        && (!(s.floatCap > 0) || s.floatCap >= 5);
+      const lowOpenProtected = lowExpectationOpen
+        && s.minutes >= 570
+        && openingFloorHeld
+        && s.current >= s.open
+        && (!Number.isFinite(s.currentVsOpen) || s.currentVsOpen <= 5)
+        && s.vwap > 0
+        && s.current >= s.vwap;
+      const firstRallyFade = lowExpectationOpen
+        && s.minutes >= 580
+        && s.minutes <= 600
+        && Number.isFinite(openingRangeSignals.level)
+        && openingRangeSignals.level > 0
+        && Number.isFinite(s.highVsOpen)
+        && s.highVsOpen >= 5
+        && Number.isFinite(s.pullback)
+        && s.pullback >= 3.5
+        && s.vwap > 0
+        && s.current < s.vwap;
+      const secondaryTailExit = openingRangeSignals.tailExit;
+      const secondaryTrendHeld = openingRangeSignals.secondaryBreakoutActive
+        && !secondaryTailExit
+        && s.current >= openingRangeSignals.secondaryBreakoutLevel
+        && s.vwap > 0
+        && s.current >= s.vwap;
+      const morningPulse = lowExpectationOpen
+        && s.highVsOpen >= 8
+        && s.minutes >= 585
+        && s.minutes <= 690;
+      const pulseFade = morningPulse
+        && (
+          (Number.isFinite(s.pullback) && s.pullback >= 5)
+          || (s.vwap > 0 && s.current < s.vwap)
+        );
+      const tailExit = s.minutes >= 870
+        && s.current < s.open
+        && s.vwap > 0
+        && s.currentVsVwap <= -1
+        && s.pullback >= 8
+        && s.turnover >= 80;
+      const extremeHighOpen = Number.isFinite(s.openPct) && s.openPct >= 150;
+      const openingSpikeFade = extremeHighOpen
+        && s.minutes >= 575
+        && s.minutes <= 630
+        && Number.isFinite(s.highVsOpen)
+        && s.highVsOpen >= 8
+        && Number.isFinite(s.pullback)
+        && s.pullback >= 6
+        && s.vwap > 0
+        && s.current < s.vwap;
+      const failedVwapRebound = vwapSignals.reboundFailed
+        && s.current < s.vwap
+        && (
+          s.current < s.open
+          || (extremeHighOpen && Number.isFinite(s.pullback) && s.pullback >= 6)
+        );
+      const profileBand = profile ? priceBand(profile, s.open) : "";
+      const profileOverheated = !!profile && (profileBand === "情绪乐观区" || profileBand === "中介高估锚附近" || profileBand === "极端梦想区");
+      const hotOpenStall = profileOverheated
+        && s.minutes >= 580
+        && s.high > 0
+        && s.high <= s.open * 1.05
+        && (
+          s.current < s.open
+          || (s.vwap > 0 && s.current < s.vwap)
+          || (Number.isFinite(s.pullback) && s.pullback >= 3)
+        );
+      const openingConfirmed = s.minutes >= 575
+        && (!s.autoFeed || (s.quoteSamples >= 3 && s.observationSeconds >= 120));
+      const openingDiscovery = s.minutes >= 570 && s.minutes < 585;
+      const confirmedWeakStructure = openingConfirmed
+        && s.current < s.open
+        && s.vwap > 0
+        && s.current < s.vwap
+        && (
+          vwapSignals.sustainedBelow
+          || vwapSignals.reboundFailed
+          || (s.minutes >= 585 && turnoverStructure.key === "distribution")
+          || (s.minutes >= 600 && turnoverStructure.key === "weakDemand")
+          || (s.minutes >= 585 && drawdownActive && s.pullback >= 8)
+        );
+      const unconfirmedOpeningWeakness = s.minutes >= 575
+        && s.minutes < 585
+        && (
+          s.current < s.open
+          || (s.vwap > 0 && s.current < s.vwap)
+        )
+        && !confirmedWeakStructure;
+      const extremeOpenFailure = extremeHighOpen
+        && s.minutes >= 575
+        && Number.isFinite(s.highVsOpen)
+        && s.highVsOpen < 5
+        && s.current <= s.open * .97
+        && s.vwap > 0
+        && s.current < s.vwap
+        && Number.isFinite(s.pullback)
+        && s.pullback >= 8;
+      const deepPriceFailure = s.minutes >= 580
+        && s.current < s.open
+        && s.vwap > 0
+        && s.currentVsVwap <= -3
+        && Number.isFinite(s.pullback)
+        && s.pullback >= 8;
+      const guard = s.open > 0 ? Math.max(s.open * (type === "A" ? .92 : .95), s.vwap > 0 ? s.vwap * .95 : 0) : NaN;
+      const hardExitConfirmed = tailExit
+        || failedVwapRebound
+        || extremeOpenFailure
+        || deepPriceFailure
+        || targetFadeConfirmed
+        || (
+          s.minutes >= 585
+          && s.current < s.open
+          && s.vwap > 0
+          && s.current < s.vwap
+          && drawdownActive
+          && Number.isFinite(s.pullback)
+          && s.pullback >= 8
+        )
+        || (
+          type === "D"
+          && openingConfirmed
+          && s.current < s.open
+          && s.vwap > 0
+          && s.current < s.vwap
+          && (
+            vwapSignals.sustainedBelow
+            || vwapSignals.reboundFailed
+            || s.minutes >= 585
+          )
+        );
+      const adaptiveOpeningExit = profile?.openingExitStrategy === "adaptive-momentum";
+      const openingExitSpecial = (adaptiveOpeningExit || profile?.openingExitStrategy === "target-time-stop")
+        && s.open > 0
+        && s.current > 0
+        && s.minutes >= 571;
+      const forecastOpenHigh = Number(profile?.forecastOpen?.[1]);
+      const outlierOpening = adaptiveOpeningExit && Boolean(
+        (Number.isFinite(s.openPct) && s.openPct >= (profile?.outlierOpenPremiumPct || 70))
+        || (Number.isFinite(forecastOpenHigh) && s.open >= forecastOpenHigh * (profile?.outlierOpenVsForecastHigh || 1.10))
+      );
+      const openingExitTargetMultiplier = s.open < (profile?.openingBaseLow || 0)
+        ? (profile?.weakOpeningTargetMultiplier || profile?.openingTargetMultiplier || 1.05)
+        : (profile?.openingTargetMultiplier || 1.05);
+      const openingExitTarget = openingExitSpecial ? s.open * openingExitTargetMultiplier : NaN;
+      const haltClockFrozen = haltState === "near30"
+        || haltState === "near60"
+        || haltState === "halted30"
+        || haltState === "halted60"
+        || haltState === "resumed30"
+        || haltState === "resumed60";
+      const firstHaltReached = outlierOpening && s.high >= halt30 * .995;
+      const secondHaltReached = outlierOpening && s.high >= halt60 * .995;
+      const outlierMomentumStrong = outlierOpening
+        && s.current >= s.open
+        && (!(s.vwap > 0) || s.current >= s.vwap)
+        && (!Number.isFinite(s.pullback) || s.pullback < 5);
+      const postSecondHaltFailure = secondHaltReached
+        && haltState !== "halted60"
+        && s.dataFresh
+        && Number.isFinite(s.pullback)
+        && s.pullback >= 5;
+      const openingExitTargetHit = openingExitSpecial && !outlierOpening && s.current >= openingExitTarget;
+      const openingExitDeadlineHit = openingExitSpecial
+        && !outlierOpening
+        && !haltClockFrozen
+        && s.minutes >= (profile?.openingExitDeadlineMinutes || 580);
+      const outlierLatestExitHit = openingExitSpecial
+        && outlierOpening
+        && !haltClockFrozen
+        && s.minutes >= (profile?.outlierLatestExitMinutes || 610);
+      const openingExitHardRisk = openingExitSpecial
+        && (postSecondHaltFailure || firstMinuteFailure || hardExitConfirmed || (
+          s.current <= s.open * .97
+          && s.vwap > 0
+          && s.current < s.vwap
+        ));
+      const openingExitBaseTrim = openingExitSpecial
+        && !outlierOpening
+        && s.minutes < (profile?.openingExitDeadlineMinutes || 580)
+        && s.open >= (profile?.openingBaseLow || 0)
+        && !openingExitTargetHit;
+      const outlierFirstHaltTrim = openingExitSpecial
+        && outlierOpening
+        && firstHaltReached
+        && !secondHaltReached
+        && !haltClockFrozen
+        && s.position >= 200;
+      if (openingExitSpecial) {
+        reasons.unshift({
+          level: openingExitDeadlineHit || outlierLatestExitHit || openingExitHardRisk ? "bad" : (outlierOpening ? "good" : "warn"),
+          text: outlierOpening
+            ? `${profile.name}已进入超预期动量模式：盘前估值线失效；守住开盘价与VWAP时不按16元静态线卖出。临停冻结09:40时限，复牌后用峰值5%回撤和关键位处理。`
+            : `${profile.name}常规开盘专案：冲高目标 ${fmtPrice(openingExitTarget)}（开盘×${openingExitTargetMultiplier.toFixed(2)}），无临停且动量未升级时最迟09:40退出。`
+        });
+      }
+      if ((type === "A" || type === "B")
+        && s.minutes >= 570
+        && s.minutes < 575
+        && openingStrong
+        && !auctionOpeningSetup.confirmed) {
+        reasons.unshift({level:"good", text:`开盘确认保护生效：${auctionActive ? "竞价换手活跃，且" : ""}开盘价未失守、价格位于VWAP上方，暂不触发卖出。`});
+      }
+      if (lowOpenProtected && s.minutes < 630) {
+        reasons.unshift({level:"good", text:"低预期开盘但开盘价未失守，且价格站上VWAP；优先等待上午反抽窗口。"});
+      }
+      if (pulseFade) {
+        reasons.unshift({level:"bad", text:`上午脉冲后回落：最高较开盘上冲 ${fmtPct(s.highVsOpen)}，但已回撤或跌破VWAP，按脉冲结束处理。`});
+      }
+      if (tailExit) {
+        reasons.unshift({level:"bad", text:"14:30后仍低于开盘价与VWAP，且高换手、高点回撤超过8%，触发尾盘全部退出规则。"});
+      }
+      if (failedVwapRebound) {
+        reasons.unshift({level:"bad", text:`VWAP反抽失败且仍位于均价线下方，${s.current < s.open ? "同时低于开盘价，" : "高点回撤仍然较深，"}剩余仓位不再等待下一次反弹。`});
+      }
+      if (openingSpikeFade) {
+        reasons.unshift({level:"bad", text:`上市首日极端高开后先冲高 ${fmtPct(s.highVsOpen)}，随后从高点回撤 ${s.pullback.toFixed(1)}%并跌到VWAP下方；按开盘尖峰回落先锁定大部分利润。`});
+      }
+      if (firstRallyFade) {
+        reasons.unshift({level:"bad", text:`首轮冲高回落：开盘15分钟高点 ${fmtPrice(openingRangeSignals.level)}，当前回撤 ${s.pullback.toFixed(1)}%且跌到VWAP下方；多手仓位先兑现一半，保留尾仓等待二次突破。`});
+      }
+      if (openingRangeSignals.breakoutNow) {
+        reasons.unshift({level:"good", text:`二次突破成立：价格重新站上开盘15分钟高点 ${fmtPrice(openingRangeSignals.secondaryBreakoutLevel)} 与VWAP，余仓切换为峰值5%移动止盈。`});
+      }
+      if (secondaryTailExit) {
+        reasons.unshift({level:"bad", text:`二次突破尾仓止盈：突破后峰值 ${fmtPrice(openingRangeSignals.secondaryPeak)}，当前回撤 ${openingRangeSignals.peakPullback.toFixed(1)}%，已达到5%移动保护线。`});
+      }
+      if (extremeOpenFailure) {
+        reasons.unshift({level:"bad", text:`极端高开承接失败：开盘涨幅 ${fmtPct(s.openPct)}，最高仅较开盘上冲 ${fmtPct(s.highVsOpen)}，随后同时跌破开盘价和VWAP且高点回撤超过8%。`});
+      }
+      if (deepPriceFailure) {
+        reasons.unshift({level:"bad", text:`价格结构优先退出：低于VWAP ${fmtPct(s.currentVsVwap)} 且高点回撤 ${s.pullback.toFixed(1)}%，不再等待换手率达到高风险阈值。`});
+      }
+      if (hotOpenStall) {
+        reasons.unshift({level:"bad", text:`${profile.name}过热开盘后首轮冲高不足5%，且已出现回落/跌破关键位，按高开滞涨处理。`});
+      }
+      if (auctionDump && s.minutes >= 570 && s.minutes < 580) {
+        reasons.unshift({level:"bad", text:"竞价换手活跃但开盘后跌破开盘价3%且位于VWAP下方，按巨量兑现处理。"});
+      }
+      if (!(s.open > 0) || !(s.current > 0)) {
+        nearest = "等待 9:25 开盘数据";
+        sellPrice = NaN;
+      } else if (targetAtMarket) {
+        nearest = `目标价 ${fmtPrice(s.targetPrice)} 已进入成交区：保留原卖单；未成交立即按当前盘口卖出`;
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = "立即";
+      } else if (openingExitHardRisk) {
+        nearest = postSecondHaltFailure
+          ? `${profile.name}第二次临停后峰值回撤 ${s.pullback.toFixed(1)}%：按首个可成交盘口卖出全部`
+          : `${profile.name}开盘承接失败：取消冲高等待，按当前盘口卖出全部`;
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = "立即";
+      } else if (openingExitDeadlineHit) {
+        nearest = `${profile.name} 09:40时间止盈已到：撤销未成交高价单，按当前盘口卖出全部`;
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = "立即，不再等待反弹";
+      } else if (outlierLatestExitHit) {
+        nearest = `${profile.name}超预期动量观察已到10:10：按当前盘口卖出全部，不再继续延长持有`;
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = "立即";
+      } else if (openingExitTargetHit) {
+        nearest = `${profile.name}冲高目标 ${fmtPrice(openingExitTarget)} 已进入成交区：卖出全部`;
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = "立即";
+      } else if (outlierFirstHaltTrim) {
+        nearest = `${profile.name}超预期开盘触及第一次临停区：多手仓位先兑现50%，余仓等待第二次临停或复牌结构失败`;
+        sellPrice = s.current;
+        ratio = 50;
+        deadline = "复牌后按峰值回撤保护";
+      } else if (outlierOpening) {
+        nearest = outlierMomentumStrong
+          ? `${profile.name}超预期动量保持：守住开盘价与VWAP，暂不卖；临停期间冻结时间止盈`
+          : `${profile.name}超预期开盘：等待开盘价与VWAP双重结构确认，不按静态估值线清仓`;
+        sellPrice = Number.isFinite(guard) ? guard : (s.vwap || s.open);
+        ratio = 0;
+        deadline = haltClockFrozen ? "复牌后重评" : "结构失败或10:10，先到先执行";
+      } else if (openingExitBaseTrim) {
+        nearest = s.position >= 200
+          ? `${profile.name}中性开盘：先兑现50%，余仓挂${fmtPrice(openingExitTarget)}；09:40未成交则撤单退出`
+          : `${profile.name}单手专案：等待${fmtPrice(openingExitTarget)}冲高目标，09:40未成交即按当前盘口退出`;
+        sellPrice = s.current;
+        ratio = s.position >= 200 ? 50 : 0;
+        deadline = `冲高目标或09:40，先到先执行`;
+      } else if (openingExitSpecial && s.open < (profile?.openingBaseLow || 0)) {
+        nearest = `${profile.name}弱于预期开盘：等待首次反抽至${fmtPrice(openingExitTarget)}，最迟09:40退出`;
+        sellPrice = openingExitTarget;
+        ratio = 0;
+        deadline = "09:40硬截止";
+      } else if (targetFadeConfirmed) {
+        nearest = `目标触达后量价背离：高点回撤 ${s.pullback.toFixed(1)}% 且换手继续增加，${targetFadeSevere ? "卖出全部" : "先卖出50%"}`;
+        sellPrice = s.current;
+        ratio = targetFadeSevere ? 100 : 50;
+        deadline = "立即";
+      } else if (targetFadeWarning) {
+        nearest = `目标价已触达、回撤 ${s.pullback.toFixed(1)}%：恢复/保留卖单；回撤5%且换手扩张时立即退出`;
+        sellPrice = s.targetPrice;
+        ratio = 0;
+        deadline = "持续监控5%回撤线";
+      } else if (auctionOpeningSetup.eligible && s.minutes >= 565 && s.minutes < 570) {
+        nearest = "9:25组合预案：准备开盘兑现30%，等待9:30价格确认";
+        sellPrice = s.open;
+        ratio = 0;
+        deadline = "09:30未转强时执行";
+      } else if (auctionOpeningSetup.confirmed) {
+        nearest = "9:30预案确认：极端溢价且竞价盘口偏空，先兑现30%";
+        sellPrice = s.current || s.open;
+        ratio = 30;
+        deadline = "开盘首分钟";
+      } else if (auctionOpeningSetup.cancelled && s.minutes < 575) {
+        nearest = "竞价偏空预案已取消：开盘价格转强，剩余仓位交给VWAP规则";
+        sellPrice = NaN;
+        ratio = 0;
+        deadline = "09:35后重评";
+      } else if (secondaryTailExit) {
+        nearest = "二次突破后峰值回撤达到5%：卖出全部剩余尾仓";
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = "立即";
+      } else if (firstRallyFade && !hardExitConfirmed) {
+        nearest = "首轮冲高回落：先卖出50%，保留尾仓等待二次突破";
+        sellPrice = s.current;
+        ratio = 50;
+        deadline = "立即完成首批兑现";
+      } else if (secondaryTrendHeld) {
+        nearest = `二次突破成立：保留尾仓，峰值5%移动保护价 ${fmtPrice(openingRangeSignals.tailGuard)}`;
+        sellPrice = NaN;
+        ratio = 0;
+        deadline = "跌破移动保护线时处理余仓";
+      } else if (firstMinuteFailure) {
+        nearest = "首分钟承接失败：先卖出50%，保留余仓等待反弹失败确认";
+        sellPrice = s.current;
+        ratio = 50;
+        deadline = "立即";
+      } else if (type === "D") {
+        if (hardExitConfirmed) {
+          nearest = "破发后开盘价与VWAP双破：硬退出确认"; sellPrice = s.current; ratio = 100; deadline = "立即";
+        } else {
+          nearest = "开盘破发：等待开盘价与VWAP双重确认，不凭单一价格清仓"; sellPrice = s.current; ratio = 0; deadline = "9:45前持续确认";
+        }
+      } else if (haltState === "near30" || haltState === "near60") {
+        nearest = "接近临停：强势价格发现，不抢跑清仓，等待复牌承接确认"; sellPrice = NaN; ratio = 0; deadline = "复牌后重评";
+      } else if (tailExit) {
+        nearest = "尾盘承接失败：卖出全部剩余仓位";
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = "立即";
+      } else if (failedVwapRebound) {
+        nearest = "VWAP反抽失败：卖出全部剩余仓位";
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = "立即";
+      } else if (extremeOpenFailure) {
+        nearest = "极端高开承接失败：取消开盘保护，卖出全部剩余仓位";
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = "首根5分钟线确认后立即";
+      } else if (hardExitConfirmed) {
+        nearest = "开盘价与VWAP双破且深度回撤：硬退出确认";
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = "立即";
+      } else if (auctionDump) {
+        nearest = "竞价巨量兑现：开盘承接失败，优先卖出";
+        sellPrice = s.current;
+        ratio = type === "A" ? 60 : 50;
+        deadline = "立即";
+      } else if (openingSpikeFade) {
+        nearest = "开盘尖峰回落：先卖出70%，剩余仓位等待反抽确认";
+        sellPrice = s.current;
+        ratio = 70;
+        deadline = "立即完成首批兑现";
+      } else if (hotOpenStall) {
+        nearest = "高开滞涨：过热区冲高不足，优先分批卖出";
+        sellPrice = s.current;
+        ratio = 50;
+        deadline = "立即";
+      } else if (pulseFade) {
+        nearest = "上午脉冲结束：回撤或跌破VWAP，优先卖出";
+        sellPrice = s.current;
+        ratio = 50;
+        deadline = "立即";
+      } else if (confirmedWeakStructure) {
+        nearest = "开盘价与VWAP双破并持续确认：卖出或大幅减仓"; sellPrice = s.current; ratio = type === "A" ? 40 : 50; deadline = "立即";
+      } else if (unconfirmedOpeningWeakness) {
+        nearest = "开盘弱势尚未持续确认：等待VWAP收复或反抽失败，不抢跑卖出";
+        sellPrice = NaN;
+        ratio = 0;
+        deadline = "09:45前持续确认";
+      } else if (lowOpenProtected && s.minutes < 630) {
+        nearest = "低预期开盘守住：等待上午反抽，不急于开盘卖";
+        sellPrice = Math.max(s.current, s.open * 1.08);
+        ratio = 0;
+        deadline = "10:30前观察";
+      } else if (type === "A") {
+        if (s.minutes < 570) {
+          nearest = "9:25只记录开盘价，不触发卖出";
+          sellPrice = s.open * 1.05; ratio = 0; deadline = "9:30后确认";
+        } else if (s.minutes < 575 && (!openingConfirmed || openingStrong)) {
+          nearest = openingStrong ? "开盘承接强：确认期内暂不卖" : "开盘数据采集中：暂不卖";
+          sellPrice = Math.max(s.current, s.open * 1.05); ratio = 0; deadline = "9:35确认";
+        } else if (turnoverStructure.key === "strong" || openingStrong) {
+          nearest = "换手与价格结构共振向上：守住开盘价和VWAP，不按固定涨幅卖出";
+          sellPrice = NaN; ratio = 0; deadline = "有效跌破VWAP或反抽失败后重评";
+        } else if (profileOverheated) {
+          nearest = "处于静态过热估值区：只提示位置，不直接卖出，等待动态转弱确认";
+          sellPrice = NaN;
+          ratio = 0;
+          deadline = "VWAP持续失守或反抽失败后重评";
+        } else {
+          nearest = "高波动价格发现：等待换手、VWAP与回撤形成一致结论";
+          sellPrice = NaN; ratio = 0; deadline = "持续评估";
+        }
+      } else if (type === "B") {
+        if (s.minutes < 570) {
+          nearest = "9:25只记录开盘价，不触发卖出";
+          sellPrice = s.open * 1.10; ratio = 0; deadline = "9:30后确认";
+        } else if (s.minutes < 575 && (!openingConfirmed || openingStrong)) {
+          nearest = openingStrong ? "开盘承接强：确认期内暂不卖" : "开盘数据采集中：暂不卖";
+          sellPrice = s.open * 1.10; ratio = 0; deadline = "9:35确认";
+        } else if (turnoverStructure.key === "strong" || openingStrong) {
+          nearest = "换手与价格结构共振向上：继续持有，不按保守估值或固定涨幅卖出";
+          sellPrice = NaN; ratio = 0; deadline = "有效跌破VWAP或反抽失败后重评";
+        } else if (profileOverheated) {
+          nearest = "处于静态过热估值区：只提示位置，不直接卖出，等待动态转弱确认";
+          sellPrice = NaN;
+          ratio = 0;
+          deadline = "VWAP持续失守或反抽失败后重评";
+        } else if (s.minutes <= 585) {
+          nearest = "开盘确认期：静态目标已到达也不卖，等待价格结构确认";
+          sellPrice = NaN; ratio = 0; deadline = "09:45前持续确认";
+        } else if (s.rising && s.current >= s.vwap) {
+          nearest = "VWAP上方趋势延续：继续持有，等待有效转弱";
+          sellPrice = NaN; ratio = 0; deadline = "反抽失败或高点深度回撤后重评";
+        } else {
+          nearest = "方向尚未确认：等待VWAP持续失守或反抽失败";
+          sellPrice = NaN; ratio = 0; deadline = "持续评估";
+        }
+      } else {
+        if (lowOpenProtected && s.minutes < 630) {
+          nearest = "低预期开盘守住：等待上午反抽，不急于开盘卖";
+          sellPrice = Math.max(s.current, s.open * 1.08);
+          ratio = 0;
+          deadline = "10:30前观察";
+        } else if (s.current >= s.vwap && s.rising) {
+          nearest = "站稳VWAP且价格继续抬升：继续持有，以VWAP和价格保持度作为生命线";
+          sellPrice = NaN;
+          ratio = 0;
+        } else {
+          nearest = "方向尚未确认：以VWAP和开盘价为生命线继续观察";
+          sellPrice = s.vwap || s.open;
+          ratio = 0;
+        }
+      }
+      const urgentNow = hardExitConfirmed
+        || targetAtMarket
+        || targetFadeConfirmed
+        || confirmedWeakStructure
+        || openingSpikeFade
+        || firstRallyFade
+        || secondaryTailExit
+        || pulseFade
+        || tailExit
+        || failedVwapRebound;
+      if (s.minutes >= 685 && s.minutes < 690 && ratio < 100 && !urgentNow) {
+        const middayStrong = s.current >= s.open
+          && (!(s.vwap > 0) || s.current >= s.vwap)
+          && s.pullback < 5;
+        if (middayStrong) {
+          nearest = "午盘前复核：仍在VWAP上方且回撤有限，保留仓位午后重评";
+          sellPrice = s.vwap || s.current;
+          ratio = 0;
+          deadline = "13:00重新评估";
+        } else {
+          nearest = "午盘前转弱：评估并处理计划剩余仓位";
+          sellPrice = s.current;
+          ratio = Math.max(ratio, 20);
+          deadline = "11:30";
+        }
+      } else if (s.minutes >= 690 && s.minutes < 780) {
+        nearest = "午间休市：暂停卖出提示，13:00后重新评估";
+        sellPrice = NaN;
+        ratio = 0;
+        deadline = "13:00重评";
+      } else if (s.minutes >= 780 && s.minutes < 885 && !urgentNow) {
+        nearest = "午后观察：不再沿用午盘前提示，仅在反弹失败或跌破关键位时处理";
+        sellPrice = s.vwap || s.current;
+        ratio = 0;
+        deadline = "14:45前持续评估";
+      } else if (s.minutes >= 885 && !urgentNow) {
+        nearest = "尾盘风险窗口：评估剩余仓位，不自动强制清仓";
+        sellPrice = s.current;
+        ratio = 0;
+        deadline = "14:57前自行决定";
+      }
+      if (haltState === "halted30" || haltState === "halted60") {
+        nearest = "临停中：暂停普通提示，等待复牌";
+        sellPrice = NaN;
+        ratio = 0;
+        deadline = "复牌后重评";
+      } else if ((haltState === "resumed30" || haltState === "resumed60")
+        && !vwapSignals.resumeWarmup
+        && s.current < s.high * .97
+        && s.current < s.vwap) {
+        nearest = "复牌后高点回撤且跌破VWAP：先减仓，保留尾仓等待二次确认";
+        sellPrice = s.current;
+        ratio = 50;
+        deadline = "立即";
+      }
+      if (vwapSignals.resumeWarmup && !postSecondHaltFailure) {
+        nearest = "临停复牌后2分钟观察期：暂停卖出，等待承接重新定价";
+        sellPrice = NaN;
+        ratio = 0;
+        deadline = "复牌有效成交满2分钟后重评";
+        reasons.unshift({level:"good", text:"复牌暖机保护已生效：临停期间不累计VWAP失守时间，复牌最初2分钟不执行普通回撤卖出。"});
+      }
+
+      if (mustExitDayOne && s.minutes >= 870 && s.minutes < 885) {
+        nearest = "首日必须清仓：14:30后开始退出，先卖出至少50%剩余仓位";
+        sellPrice = s.current;
+        ratio = Math.max(ratio, 50);
+        deadline = "14:45前完成首轮退出";
+        reasons.unshift({level:"warn", text:"已启用首日必须清仓策略：14:30后不再新增持有时间，先退出至少一半剩余仓位。"});
+      } else if (mustExitDayOne && s.minutes >= 885) {
+        nearest = haltState === "halted30" || haltState === "halted60"
+          ? "首日必须清仓且临停中：提交可成交限价委托，参加复牌集合竞价"
+          : "首日必须清仓：卖出全部剩余仓位，不留隔夜仓";
+        sellPrice = s.current;
+        ratio = 100;
+        deadline = s.minutes >= 895 ? "立即处理" : "14:55前完成";
+        reasons.unshift({level:"bad", text:"已进入首日清仓窗口；时间规则优先于软性趋势判断，全部剩余仓位需要在收盘前处理。"});
+      }
+
+      if (openingActionLocked && !openingExitSpecial && !auctionOpeningSetup.confirmed && !auctionOpeningSetup.cancelled && !targetAtMarket && !targetFadeConfirmed) {
+        ratio = 0;
+        sellPrice = NaN;
+        nearest = openingStrong
+          ? "首个5分钟价格发现：承接暂稳，硬保护期内暂不卖"
+          : "首个5分钟价格发现：波动尚未确认，硬保护期内暂不卖";
+        deadline = "09:35首根5分钟线后重评";
+        reasons.unshift({level:"good", text:"09:30—09:35开盘硬保护已生效：普通跌破、单笔下探和未激活的高点回撤均不产生卖出数量。"});
+      } else if (openingDiscovery && !openingExitSpecial && !firstRallyFade && !hardExitConfirmed && !firstMinuteFailure && !auctionOpeningSetup.confirmed && !targetAtMarket && !targetFadeConfirmed) {
+        if (ratio > 25) ratio = 25;
+        if (openingStrong) {
+          nearest = `开盘保护生效：守住开盘价与VWAP，暂不清仓｜${nearest}`;
+          reasons.unshift({level:"good", text:"价格守住开盘价、位于VWAP上方且回撤有限，开盘保护条件成立。"});
+        } else {
+          nearest = ratio > 0
+            ? `开盘确认期：软信号最多减仓25%｜${nearest}`
+            : `开盘观察期：尚未硬确认，暂不清仓｜${nearest}`;
+          reasons.unshift({level:"warn", text:"09:35—09:45只允许确认后的轻仓处理；普通跌破必须等待VWAP持续失守、反抽失败或有效高点深度回撤。"});
+        }
+      }
+
+      const singleLotExitConfirmed = hardExitConfirmed
+        || targetFadeConfirmed
+        || openingSpikeFade
+        || secondaryTailExit
+        || (mustExitDayOne && s.minutes >= 870)
+        || (
+          drawdownActive
+          && s.current < s.vwap
+          && Number.isFinite(s.pullback)
+          && s.pullback >= 8
+          && (vwapSignals.sustainedBelow || vwapSignals.reboundFailed)
+        );
+      const singleLotAuctionReturnExit = s.position > 0
+        && s.position < 200
+        && s.singleLotMode === "return"
+        && auctionOpeningSetup.confirmed;
+      if (s.position > 0 && s.position < 200 && ratio > 0 && ratio < 100) {
+        if (singleLotAuctionReturnExit) {
+          ratio = 100;
+          sellPrice = s.current;
+          nearest = `单手收益优先确认：卖出全部${Math.round(s.position)}股｜${nearest}`;
+          deadline = "开盘首分钟";
+          reasons.unshift({level:"bad", text:"严格竞价组合已在9:30完成确认；单手无法分批，收益优先模式将30%预案转换为全部卖出。"});
+        } else if (singleLotExitConfirmed) {
+          ratio = 100;
+          sellPrice = s.current;
+          nearest = `单手硬退出确认：卖出全部${Math.round(s.position)}股｜${nearest}`;
+          deadline = "立即";
+          reasons.unshift({level:"bad", text:"当前为单手仓位且退出信号已完成双重确认；无法分批时执行全部卖出。"});
+        } else {
+          ratio = 0;
+          sellPrice = Number.isFinite(guard) ? guard : (s.vwap || s.open);
+          nearest = "单手仓位无法分批：软信号暂不卖，等待硬退出双确认";
+          deadline = "确认后再决策";
+          reasons.unshift({level:"warn", text:`当前不足200股，${s.singleLotMode === "return" ? "除严格竞价组合确认外，" : ""}助手只允许“暂不卖”或“硬确认后全部卖出”；单一换手、估值到达或瞬间跌破均不自动清仓。`});
+        }
+      }
+
+      const triggeredExitStage = ratio >= 100 ? 3 : ratio >= 50 ? 2 : ratio > 0 ? 1 : 0;
+      if (triggeredExitStage > maxTriggeredExitStage) {
+        maxTriggeredExitStage = triggeredExitStage;
+        persistSignalState();
+      } else if (maxTriggeredExitStage > triggeredExitStage) {
+        reasons.unshift({level:"warn", text:`本交易日此前已触发第${maxTriggeredExitStage}级卖出信号；刷新页面不会清除该记录。`});
+      }
+
+      const score = Math.max(0, Math.min(100, Math.round(strength - risk * .35)));
+      let grade = "观察", cls = "observe", riskType = "正常波动";
+      if (risk >= 78) { grade = "强风险"; cls = "danger"; riskType = "承接失败"; }
+      else if (risk >= 54) { grade = "卖出"; cls = "sell"; riskType = "冲高回落"; }
+      else if (risk >= 32) { grade = "减仓"; cls = "reduce"; riskType = "高位转弱"; }
+      if (openingActionLocked && !openingExitSpecial && !auctionOpeningSetup.confirmed && !targetAtMarket && !targetFadeConfirmed) {
+        grade = "观察";
+        cls = "observe";
+        riskType = "高波动未确认";
+      } else if (ratio <= 0 && risk >= 32) {
+        grade = "风险观察";
+        cls = "reduce";
+        riskType = "尚未触发卖出";
+      } else if (ratio >= 100 && (grade === "观察" || grade === "减仓")) {
+        grade = "卖出";
+        cls = "sell";
+        riskType = "退出规则已确认";
+      } else if (ratio > 0 && grade === "观察") {
+        grade = "减仓";
+        cls = "reduce";
+        riskType = "分批规则已确认";
+      }
+      if (openingSpikeFade && ratio > 0) {
+        riskType = "开盘尖峰回落";
+      }
+      if (firstRallyFade && ratio > 0 && ratio < 100) {
+        riskType = "首轮冲高回落";
+      }
+      if (secondaryTailExit && ratio > 0) {
+        riskType = "二次突破尾仓止盈";
+      }
+      const expectedHaltFreeze = haltState === "halted30" || haltState === "halted60";
+      if (!s.dataFresh && s.current > 0 && !expectedHaltFreeze) {
+        grade = "数据异常";
+        cls = "reduce";
+        riskType = "行情可能延迟";
+        nearest = mustExitDayOne && s.minutes >= 885
+          ? "首日必须清仓：行情异常，请立即核对券商终端并手动卖出全部剩余仓位"
+          : "暂停强提示，请以券商终端行情为准";
+        sellPrice = NaN;
+        ratio = mustExitDayOne && s.minutes >= 885 ? 100 : 0;
+        deadline = mustExitDayOne && s.minutes >= 885 ? "收盘前" : "数据恢复后";
+        reasons.unshift({level:"warn", text:"行情数据超过15秒未更新或正在使用缓存，已暂停强卖出提示。"});
+      }
+      let bestWindow = "等待有效行情";
+      if (!s.dataFresh && s.current > 0 && !expectedHaltFreeze) {
+        bestWindow = "数据恢复后再判断，以券商终端为准";
+      } else if (ratio > 0) {
+        bestWindow = `当前 ${s.clock || "盘中"}｜${ratio >= 100 ? "退出窗口已确认" : `分批兑现 ${ratio}%`}`;
+      } else if (auctionOpeningSetup.eligible && s.minutes < 570) {
+        bestWindow = "09:30开盘首分钟｜价格未转强则先兑现30%";
+      } else if (s.minutes < 570) {
+        bestWindow = "09:25记录竞价，09:30后等待价格确认";
+      } else if (s.minutes < 575) {
+        bestWindow = firstMinuteFailure
+          ? "首分钟风险已确认｜先减仓，反弹不能收复VWAP时退出剩余仓位"
+          : "09:35首根5分钟线完成后重评";
+      } else if (turnoverStructure.key === "strong") {
+        bestWindow = "暂不预设时刻｜等待VWAP持续失守、反抽失败或高点深度回撤";
+      } else if (s.minutes < 600) {
+        bestWindow = "09:45—10:00｜结合15/30分钟换手与价格保持度择机分批";
+      } else if (s.minutes < 630) {
+        bestWindow = "10:00—10:30｜观察首小时冲高及量增价弱信号";
+      } else if (s.minutes < 690) {
+        bestWindow = "10:30—11:30｜仅在反弹失败或VWAP破位时执行";
+      } else if (s.minutes < 870) {
+        bestWindow = "午后反弹窗口｜未转弱则继续移动保护";
+      } else {
+        bestWindow = "14:30—14:55｜按首日清仓规则处理剩余仓位";
+      }
+      if (s.dataQuality === "low" && s.current > 0) {
+        bestWindow = `低可信度｜${bestWindow}`;
+      }
+      let remainingPlan = "尚未触发首批卖出；继续以VWAP、开盘价和最近5分钟结构作为生命线";
+      if (ratio >= 100) {
+        remainingPlan = "当前信号已覆盖全部仓位，不再保留观察仓";
+      } else if (firstRallyFade && ratio > 0) {
+        remainingPlan = `保留${100-ratio}%：重新站上${fmtPrice(openingRangeSignals.level)}与VWAP则切换二次突破；否则按VWAP反抽失败处理`;
+      } else if (openingSpikeFade && ratio > 0) {
+        remainingPlan = `保留${100-ratio}%：等待反抽；3分钟不能站稳VWAP或高点回撤扩大至8%，全部退出`;
+      } else if (secondaryTrendHeld) {
+        remainingPlan = `二次突破尾仓跟踪中：峰值${fmtPrice(openingRangeSignals.secondaryPeak)}，5%移动保护价${fmtPrice(openingRangeSignals.tailGuard)}`;
+      } else if (ratio > 0) {
+        remainingPlan = `首批兑现${ratio}%后，余仓在VWAP反抽失败、开盘价失守或硬退出确认时处理`;
+      } else if (vwapSignals.sustainedBelow || vwapSignals.reboundFailed) {
+        remainingPlan = "VWAP弱势确认已出现；下一次有效反抽失败时不再延后处理";
+      }
+      return {type,reasons,plan,score,grade,cls,riskType,nearest,bestWindow,remainingPlan,sellPrice,ratio,deadline,guard,halt30,halt60,haltState,openingActionLocked,turnoverStructure,auctionOpeningSetup,vwapSignals,targetSignals,openingSpikeFade,firstRallyFade,secondaryTailExit,secondaryTrendHeld,openingRangeSignals};
+    }
+
+    const finiteOrNull = value => Number.isFinite(value) ? value : null;
+
+    function signalArchivePayload(s, d, executable) {
+      const decisionKey = JSON.stringify({
+        grade:d.grade,
+        ratio:d.ratio,
+        qty:executable.qty,
+        riskType:d.riskType,
+        sustainedBelow:Boolean(d.vwapSignals?.sustainedBelow),
+        reboundFailed:Boolean(d.vwapSignals?.reboundFailed),
+        targetAtMarket:Boolean(d.targetSignals?.atMarket),
+        targetFadeConfirmed:Boolean(d.targetSignals?.fadeConfirmed),
+        exitStage:maxTriggeredExitStage,
+      });
+      return {
+        sessionDate:currentSessionDate || new Date().toLocaleDateString("sv-SE"),
+        code:s.code,
+        capturedAt:lastQuoteCapturedAt || new Date().toISOString(),
+        source:marketHealth.source || "manual",
+        price:finiteOrNull(s.current),
+        high:finiteOrNull(s.high),
+        vwap:finiteOrNull(s.vwap),
+        turnoverPct:finiteOrNull(s.turnover),
+        grade:d.grade,
+        sellRatio:finiteOrNull(d.ratio),
+        sellQty:finiteOrNull(executable.qty),
+        sellPrice:executable.qty ? finiteOrNull(d.sellPrice) : null,
+        guardPrice:finiteOrNull(d.guard),
+        score:finiteOrNull(d.score),
+        riskType:d.riskType,
+        nearest:d.nearest,
+        bestWindow:d.bestWindow,
+        deadline:d.deadline,
+        decisionKey,
+        analysis:d.reasons.map(item => ({level:item.level, text:item.text})),
+        state:{
+          name:s.name,
+          open:finiteOrNull(s.open),
+          low:finiteOrNull(s.low),
+          pullbackPct:finiteOrNull(s.pullback),
+          priceRetentionPct:finiteOrNull(s.priceRetention),
+          currentVsVwapPct:finiteOrNull(s.currentVsVwap),
+          openingTurnover30Pct:finiteOrNull(s.turnover30),
+          rollingTurnover30Pct:finiteOrNull(s.rollingTurnover30),
+          position:finiteOrNull(s.position),
+          targetPrice:finiteOrNull(s.targetPrice),
+          singleLotMode:s.singleLotMode,
+          dataQuality:s.dataQuality,
+          dataFresh:s.dataFresh,
+          sustainedBelow:Boolean(d.vwapSignals?.sustainedBelow),
+          reboundFailed:Boolean(d.vwapSignals?.reboundFailed),
+          targetTouched:Boolean(d.targetSignals?.touched),
+          targetAtMarket:Boolean(d.targetSignals?.atMarket),
+          targetFadeWarning:Boolean(d.targetSignals?.fadeWarning),
+          targetFadeConfirmed:Boolean(d.targetSignals?.fadeConfirmed),
+           targetTurnoverExpanded:Boolean(d.targetSignals?.turnoverExpanded),
+           openingRangeHigh:finiteOrNull(d.openingRangeSignals?.level),
+           openingRangeFrozen:Boolean(d.openingRangeSignals?.frozen),
+           secondaryBreakoutActive:Boolean(d.openingRangeSignals?.secondaryBreakoutActive),
+           secondaryBreakoutLevel:finiteOrNull(d.openingRangeSignals?.secondaryBreakoutLevel),
+           secondaryPeak:finiteOrNull(d.openingRangeSignals?.secondaryPeak),
+           secondaryPeakPullbackPct:finiteOrNull(d.openingRangeSignals?.peakPullback),
+           tailGuardPrice:finiteOrNull(d.openingRangeSignals?.tailGuard),
+         },
+      };
+    }
+
+    async function archiveSignalDecision(s, d, executable) {
+      if (!lastQuoteCapturedAt || !s.code || !marketHealth.source) return;
+      if (lastArchivedCapturedAt === lastQuoteCapturedAt) return;
+      const payload = signalArchivePayload(s, d, executable);
+      lastArchivedCapturedAt = lastQuoteCapturedAt;
+      try {
+        const token = accessToken();
+        const res = await fetch(`${BRIDGE}/api/signal-event${token ? `?token=${encodeURIComponent(token)}` : ""}`, {
+          method:"POST",
+          cache:"no-store",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        const marker = data.event?.isMaterialChange ? "关键变化" : "常规快照";
+        $("archiveStatus").textContent = `已存档 ${payload.capturedAt.replace("T", " ").slice(0,19)}｜${marker}｜${payload.grade}｜${payload.nearest}`;
+      } catch (error) {
+        lastArchivedCapturedAt = "";
+        $("archiveStatus").textContent = `盘中提示存档失败：${error.message}`;
+      }
+    }
+
+    const escapeHtml = text => String(text ?? "").replace(/[&<>"']/g, char => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;"
+    })[char]);
+
+    async function fetchSignalArchive(changesOnly) {
+      const code = $("code").value.trim();
+      if (!code) throw new Error("请先输入证券代码");
+      const token = accessToken();
+      const date = currentSessionDate || new Date().toLocaleDateString("sv-SE");
+      const query = new URLSearchParams({code, date, changesOnly:changesOnly ? "1" : "0", limit:"20000"});
+      if (token) query.set("token", token);
+      const res = await fetch(`${BRIDGE}/api/signal-events?${query}`, {cache:"no-store"});
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data.archive;
+    }
+
+    async function loadSignalArchive() {
+      try {
+        const changesOnly = $("archiveChangesOnly").checked;
+        const archive = await fetchSignalArchive(changesOnly);
+        currentArchiveEvents = archive.events || [];
+        $("archiveStatus").textContent = `${archive.sessionDate} 共存档 ${archive.total} 次分析，其中关键变化 ${archive.materialChanges} 次；当前显示 ${currentArchiveEvents.length} 条。`;
+        $("archiveRows").innerHTML = currentArchiveEvents.length
+          ? currentArchiveEvents.map(event => {
+              const reason = event.analysis?.[0]?.text || "--";
+              const qty = event.sellQty > 0 ? `${event.sellQty}股 / ${Number(event.sellRatio || 0).toFixed(0)}%` : "暂不卖";
+              const time = String(event.capturedAt || "").replace("T", " ").slice(11,19);
+              return `<tr class="${event.isMaterialChange ? "archiveMaterial" : ""}"><td>${escapeHtml(time)}</td><td>${fmtPrice(Number(event.price))} / ${fmtPrice(Number(event.vwap))}</td><td>${escapeHtml(event.grade)}</td><td>${escapeHtml(event.nearest)}</td><td>${escapeHtml(qty)}</td><td>${fmtPrice(Number(event.guardPrice))}</td><td>${escapeHtml(reason)}</td></tr>`;
+            }).join("")
+          : `<tr><td colspan="7">当日暂无盘中分析存档</td></tr>`;
+      } catch (error) {
+        $("archiveStatus").textContent = `读取盘中提示存档失败：${error.message}`;
+      }
+    }
+
+    function csvCell(value) {
+      const text = String(value ?? "");
+      return `"${text.replace(/"/g, '""')}"`;
+    }
+
+    async function exportSignalArchive() {
+      try {
+        const archive = await fetchSignalArchive(false);
+        const rows = [["时间","证券代码","价格","最高价","VWAP","换手率","等级","卖出比例","卖出数量","执行价","保护价","风险类型","当前提示","最优窗口","截止时间","关键变化","主要依据"]];
+        for (const event of archive.events || []) {
+          rows.push([
+            event.capturedAt,event.code,event.price,event.high,event.vwap,event.turnoverPct,event.grade,
+            event.sellRatio,event.sellQty,event.sellPrice,event.guardPrice,event.riskType,event.nearest,
+            event.bestWindow,event.deadline,event.isMaterialChange ? "是" : "否",
+            (event.analysis || []).map(item => item.text).join("｜"),
+          ]);
+        }
+        const csv = "\ufeff" + rows.map(row => row.map(csvCell).join(",")).join("\r\n");
+        const url = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"}));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${archive.code}_${archive.sessionDate}_盘中分析存档.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+        $("archiveStatus").textContent = `已导出 ${archive.events?.length || 0} 条完整盘中分析。`;
+      } catch (error) {
+        $("archiveStatus").textContent = `导出盘中提示存档失败：${error.message}`;
+      }
+    }
+
+    function renderActionBanner(s, d, executable) {
+      const banner = $("actionBanner");
+      let mode = "actionObserve";
+      let title = "暂不卖出｜继续观察";
+      let detail = d.nearest || "等待有效行情";
+      let price = "--";
+      let deadline = `保护价 ${fmtPrice(d.guard)}`;
+
+      if (!s.dataFresh && s.current > 0 && d.haltState !== "halted30" && d.haltState !== "halted60") {
+        mode = "actionPaused";
+        title = "暂停提示｜先核对券商行情";
+        detail = "当前行情延迟、异常或正在使用缓存，不能依据本助手执行卖出。";
+        deadline = "等待实时行情恢复";
+      } else if (executable.qty > 0) {
+        mode = "actionSell";
+        const urgent = d.deadline === "立即" || d.grade === "强风险" || d.ratio >= 100;
+        title = `${urgent ? "立即" : "执行"}卖出 ${Math.round(executable.qty)} 股`;
+        detail = `${d.riskType}｜${d.nearest}｜${d.remainingPlan}`;
+        price = `¥${fmtPrice(d.sellPrice)}`;
+        deadline = `最晚：${d.deadline || "立即处理"}｜仓位 ${executable.pct.toFixed(0)}%`;
+      } else if (d.grade === "风险观察" || d.cls === "reduce" || d.ratio > 0) {
+        mode = "actionWarn";
+        title = s.position > 0 && s.position < 200
+          ? "暂不卖出｜等待硬退出确认"
+          : "暂不卖出｜风险观察";
+        detail = `${d.riskType}｜${d.nearest}`;
+        deadline = `保护价 ${fmtPrice(d.guard)}｜${d.deadline || "继续观察"}`;
+      }
+
+      banner.className = `actionBanner ${mode}`;
+      $("actionTitle").textContent = title;
+      $("actionDetail").textContent = detail;
+      $("actionPrice").textContent = price;
+      $("actionDeadline").textContent = deadline;
+      document.title = executable.qty > 0
+        ? `【卖出${Math.round(executable.qty)}股】北交所卖出助手`
+        : `【暂不卖出】北交所卖出助手`;
+    }
+
+    function render(archive=false) {
+      const s = readState(), d = decide(s);
+      const f = forecast(s);
+      $("mStock").textContent = `${s.code || "待输入"} ${s.name || ""}`.trim();
+      $("mOpenPct").textContent = fmtPct(s.openPct);
+      $("mCurrentPct").textContent = fmtPct(s.currentPct);
+      $("mPullback").textContent = fmtPct(s.pullback);
+      $("mTurnover").textContent = Number.isFinite(s.turnover) ? `${s.turnover.toFixed(1)}%` : "--";
+      $("mVwap").textContent = fmtPct(s.currentVsVwap);
+      const haltLabels = {normal:"正常",near30:"接近30%",halted30:"30%临停中",resumed30:"30%复牌",near60:"接近60%",halted60:"60%临停中",resumed60:"60%复牌"};
+      $("mHalt").textContent = d.halt30 > 0 ? `${haltLabels[d.haltState] || "正常"}｜${fmtPrice(d.halt30)} / ${fmtPrice(d.halt60)}` : "--";
+      if (s.floatCap > 0 && $("aFloatCap").textContent === "--") $("aFloatCap").textContent = `${s.floatCap.toFixed(2)} 亿`;
+      if (Number.isFinite(s.peDiscount) && $("aDiscount").textContent === "--") $("aDiscount").textContent = `${s.peDiscount.toFixed(1)}%`;
+      if (Number.isFinite(s.turnover)) $("aTurnover").textContent = `${s.turnover.toFixed(1)}%`;
+      $("aTurnoverStructure").textContent = d.turnoverStructure.label;
+      $("aTurnoverStructureNote").textContent = Number.isFinite(d.turnoverStructure.velocity)
+        ? `${d.turnoverStructure.note}｜约 ${d.turnoverStructure.velocity.toFixed(2)}%/分钟`
+        : d.turnoverStructure.note;
+      if (Number.isFinite(s.turnover30)) {
+        $("aTurnover30").textContent = `${s.turnover30.toFixed(1)}%`;
+        $("aTurnover30Note").textContent = s.openingTurnover30Final
+          ? "10:00附近已锁定，不再改写"
+          : (s.minutes < 600 ? "10:00前实时累计，当前为暂定值" : "手动值或未核验快照");
+      }
+      const turnoverBand = d.turnoverStructure.band || openingTurnoverBandFor(s);
+      $("aTurnoverBand").textContent = turnoverBand.label;
+      $("aTurnoverBandNote").textContent = turnoverBand.note;
+      $("aPriceRetention").textContent = Number.isFinite(s.priceRetention)
+        ? `${s.priceRetention.toFixed(1)}%`
+        : "--";
+      $("aRollingTurnover30").textContent = Number.isFinite(s.rollingTurnover30)
+        ? `${s.rollingTurnover30.toFixed(1)}%`
+        : "采集中";
+      $("aRollingTurnover30Note").textContent = Number.isFinite(s.rollingTurnover30)
+        ? "最近30分钟新增换手，用于观察成交衰减"
+        : "需持续运行满30分钟";
+      if (Number.isFinite(s.auctionRatio) && s.auctionRatio > 0) $("aAuction").textContent = `${s.auctionRatio.toFixed(2)}%`;
+      $("aOpeningRangeHigh").textContent = Number.isFinite(d.openingRangeSignals.level)
+        ? fmtPrice(d.openingRangeSignals.level)
+        : "采集中";
+      $("aOpeningRangeNote").textContent = d.openingRangeSignals.frozen
+        ? "已冻结，后续新高不改写二次突破基准"
+        : "9:45冻结，作为二次突破基准";
+      $("aSecondaryBreakout").textContent = d.openingRangeSignals.secondaryBreakoutActive
+        ? (d.secondaryTailExit ? "尾仓止盈触发" : "已突破")
+        : "未触发";
+      $("aSecondaryBreakoutNote").textContent = d.openingRangeSignals.secondaryBreakoutActive
+        ? `突破线 ${fmtPrice(d.openingRangeSignals.secondaryBreakoutLevel)}｜峰值 ${fmtPrice(d.openingRangeSignals.secondaryPeak)}`
+        : "需重新站上早盘高点与VWAP";
+      $("aTailGuard").textContent = fmtPrice(d.openingRangeSignals.tailGuard);
+      $("aTailGuardNote").textContent = Number.isFinite(d.openingRangeSignals.peakPullback)
+        ? `当前距突破后峰值回撤 ${d.openingRangeSignals.peakPullback.toFixed(1)}%`
+        : "突破后按峰值5%回撤保护";
+      if (f) {
+        $("pOpen").textContent = fmtPrice(f.open.mid);
+        $("pOpenRange").textContent = f.open.confirmed
+          ? "实际开盘价已确认"
+          : `区间 ${fmtPrice(f.open.low)} - ${fmtPrice(f.open.high)}｜预估溢价 ${f.premium.toFixed(0)}%`;
+        $("pLow").textContent = fmtPrice(f.low.mid);
+        $("pLowRange").textContent = `区间 ${fmtPrice(f.low.low)} - ${fmtPrice(f.low.high)}`;
+        $("pHigh").textContent = fmtPrice(f.high.mid);
+        $("pHighRange").textContent = `区间 ${fmtPrice(f.high.low)} - ${fmtPrice(f.high.high)}`;
+        $("pConfidence").textContent = `${f.confidence}%`;
+        $("pFactors").textContent = `方法：经验权重模型（非历史分位数，样本数 N/A）｜${scenarioName(f.type)}｜${f.factors.join("；")}。实际开盘后动态校准。`;
+      } else {
+        $("pOpen").textContent = "--";
+        $("pLow").textContent = "--";
+        $("pHigh").textContent = "--";
+        $("pConfidence").textContent = "--";
+        $("pFactors").textContent = "缺少发行价，暂时无法生成价格预测。";
+      }
+      $("scenario").textContent = scenarioName(d.type);
+      $("grade").textContent = d.grade; $("grade").className = `grade ${d.cls}`;
+      $("fill").style.width = `${d.score}%`; $("fill").style.background = d.cls === "observe" ? "var(--green)" : d.cls === "reduce" ? "var(--amber)" : "var(--red)";
+      $("score").textContent = `强弱评分 ${d.score}/100`;
+      $("nearest").textContent = d.nearest;
+      $("bestWindow").textContent = d.bestWindow;
+      const executable = executableSell(s.position, d.ratio);
+      renderActionBanner(s, d, executable);
+      $("sellPrice").textContent = executable.qty ? fmtPrice(d.sellPrice) : "未触发";
+      $("sellQty").textContent = executable.qty
+        ? `${executable.qty} 股（实际 ${executable.pct.toFixed(0)}%）`
+        : "暂不卖";
+      $("guard").textContent = fmtPrice(d.guard);
+      $("deadline").textContent = d.deadline;
+      $("riskType").textContent = d.riskType;
+      $("remainingPlan").textContent = d.remainingPlan;
+      $("reasons").innerHTML = d.reasons.map(x => `<li class="${escapeHtml(x.level)}">${escapeHtml(x.text)}</li>`).join("");
+      const displayPlan = d.plan;
+      $("planBody").innerHTML = displayPlan.map((row,index) => {
+        const qty = executableSell(s.position, row[3]);
+        const singleLotSoft = s.position > 0 && s.position < 200 && row[3] > 0 && row[3] < 100;
+        const auctionReturnPlan = singleLotSoft && row[0] === "9:25预案档" && s.singleLotMode === "return";
+        const executionText = auctionReturnPlan
+          ? `收益优先：9:30确认后${Math.round(s.position)}股`
+          : singleLotSoft
+            ? `单手：软信号0股，硬确认后${Math.round(s.position)}股`
+          : row[3] > 0
+            ? `${row[3]}% / ${qty.qty || "--"}股`
+            : "不产生卖出数量";
+        const priceText = row[4] || fmtPrice(row[2]);
+        return `<tr class="${index===0?"activeRow":""}"><td><span class="tag">${escapeHtml(row[0])}</span></td><td>${escapeHtml(row[1])}</td><td>${escapeHtml(priceText)}</td><td>${escapeHtml(executionText)}</td></tr>`;
+      }).join("");
+      if (archive) archiveSignalDecision(s, d, executable);
+      previousPrice = s.current > 0 ? s.current : previousPrice;
+    }
+
+    function setStatus(text, ok=false) {
+      $("feedStatus").textContent = text; $("feedStatus").style.color = ok ? "var(--green)" : "var(--muted)";
+      $("source").textContent = ok ? "自动行情运行中" : "手动模式";
+    }
+
+    function setAutoStatus(text, ok=false) {
+      $("autoStatus").textContent = text;
+      $("autoStatus").style.color = ok ? "var(--green)" : "var(--muted)";
+    }
+
+    function applyProfile(profile, meta) {
+      if (!profile) return;
+      currentListingDate = String(profile.listingDate || "");
+      if (profile.name) $("name").value = profile.name;
+      if (profile.issuePrice > 0) $("issuePrice").value = Number(profile.issuePrice).toFixed(2);
+      if (profile.targetPrice > 0) $("targetPrice").value = Number(profile.targetPrice).toFixed(2);
+      if (profile.firstDayTradableShares > 0) {
+        $("tradableSharesWan").value = (Number(profile.firstDayTradableShares) / 10000).toFixed(2);
+      }
+      if (profile.denominatorSource) $("denominatorSource").value = profile.denominatorSource;
+      $("denominatorVerified").value = profile.denominatorVerified ? "1" : "0";
+      if (Number.isFinite(profile.peDiscount)) $("peDiscount").value = Number(profile.peDiscount).toFixed(1);
+      if (Number.isFinite(profile.industryHeat)) $("industryHeat").value = String(profile.industryHeat);
+      if (profile.firstDayUnlock === true) $("unlock").value = "1";
+      if (profile.firstDayUnlock === false) $("unlock").value = "0";
+      if (profile.notes) $("notes").value = profile.notes;
+      $("aIssuePe").textContent = profile.issuePe > 0 ? Number(profile.issuePe).toFixed(2) : "--";
+      $("aIndustryPe").textContent = profile.industryPe > 0 ? Number(profile.industryPe).toFixed(2) : "--";
+      $("aDiscount").textContent = Number.isFinite(profile.peDiscount) ? `${Number(profile.peDiscount).toFixed(1)}%` : "--";
+      $("aHeat").textContent = Number.isFinite(profile.industryHeat)
+        ? ["传统/偏低", "中等", "热门"][Number(profile.industryHeat)]
+        : "待判断";
+      $("aInquiry").textContent = profile.enquiryAccounts > 0 ? `${Number(profile.enquiryAccounts).toFixed(0)} 家` : "--";
+      $("aUnlock").textContent = profile.firstDayUnlock === null ? "待确认" : (profile.firstDayUnlock ? "是" : "否");
+      $("aTradableShares").textContent = profile.firstDayTradableShares > 0
+        ? `${(Number(profile.firstDayTradableShares) / 10000).toFixed(2)} 万股`
+        : "未配置";
+      $("aDenominatorStatus").textContent = profile.denominatorVerified
+        ? `已核验｜${profile.denominatorSource || "本地记录"}`
+        : "未核验，不启用强换手信号";
+      const peText = profile.issuePe > 0 && profile.industryPe > 0
+        ? `发行PE ${Number(profile.issuePe).toFixed(2)} / 行业PE ${Number(profile.industryPe).toFixed(2)}`
+        : "PE资料未完整返回";
+      const industryText = profile.industry
+        ? `行业：${profile.industry}`
+        : profile.mainBusiness
+          ? `主营：${profile.mainBusiness}`
+          : "行业分类未返回";
+      const enquiryText = profile.enquiryAccounts > 0 ? `询价账户 ${Number(profile.enquiryAccounts).toFixed(0)} 家` : "询价账户数未返回";
+      const unlockText = profile.firstDayUnlock === null ? "首日解禁待公告确认" : `首日解禁：${profile.firstDayUnlock ? "是" : "否"}`;
+      const denominatorText = profile.firstDayTradableShares > 0
+        ? `首日流通盘 ${(Number(profile.firstDayTradableShares) / 10000).toFixed(2)} 万股（${profile.denominatorVerified ? "已核验" : "未核验"}）`
+        : "首日流通盘待录入";
+      const valuationText = profile.valuationSummary ? `；估值预案：${profile.valuationSummary}` : "";
+      profileStatusText = `${meta.source || "发行资料"}：${industryText}；${peText}；${enquiryText}；${unlockText}；${denominatorText}${valuationText}。`;
+      setAutoStatus(profileStatusText, true);
+      render();
+    }
+
+    function clearMarketState(clearProfile=false) {
+      ["openPrice","currentPrice","highPrice","lowPrice","vwap","turnover","turnover30","floatCap"]
+        .forEach(id => { $(id).value = ""; });
+      $("auctionRatio").value = "";
+      $("auctionImbalance").value = "";
+      $("auctionBookVerified").value = "0";
+      quoteSampleCount = 0;
+      firstQuoteAt = null;
+      lastQuoteVolume = null;
+      rollingTurnover30 = NaN;
+      openingTurnover30Final = false;
+      turnoverDelta5 = NaN;
+      quoteDataQuality = {confidence:"low", denominatorVerified:false, tqPrimary:false};
+      auctionBookMeta = {captured:false, reliable:false, source:"", capturedAt:""};
+      marketHealth = {fresh:false, ageSeconds:null, failures:0, source:"", usingCache:false, quality:"low", phase:"unknown", quoteFrozen:false, unchangedSeconds:0};
+      lastQuoteCapturedAt = "";
+      lastArchivedCapturedAt = "";
+      resetSignalState();
+      previousPrice = null;
+      if (clearProfile) {
+        currentListingDate = "";
+        ["name","issuePrice","targetPrice","tradableSharesWan","denominatorSource","peDiscount","notes"]
+          .forEach(id => { $(id).value = ""; });
+        $("denominatorVerified").value = "0";
+        $("unlock").value = "";
+      }
+      $("aFloatCap").textContent = "--";
+      $("aTurnover").textContent = "--";
+      $("aTurnover30").textContent = "未捕获";
+      $("aRollingTurnover30").textContent = "采集中";
+      $("aTurnoverDelta5").textContent = "采集中";
+      $("aAuction").textContent = "未捕获";
+      $("aAuctionNote").textContent = "等待9:25有效成交快照";
+      $("aAuctionImbalance").textContent = "未捕获";
+      $("aAuctionImbalanceNote").textContent = "负值代表五档委卖金额更大";
+      $("aSource").textContent = "未连接";
+      $("aFreshness").textContent = "无实时行情";
+      $("aCache").textContent = "未使用缓存";
+      $("aFailures").textContent = "0";
+      $("aDataQuality").textContent = "低";
+      $("aDataQualityNote").textContent = "等待上市后实时行情";
+      $("aOpeningRangeHigh").textContent = "采集中";
+      $("aOpeningRangeNote").textContent = "9:45冻结，作为二次突破基准";
+      $("aSecondaryBreakout").textContent = "未触发";
+      $("aSecondaryBreakoutNote").textContent = "需重新站上早盘高点与VWAP";
+      $("aTailGuard").textContent = "--";
+      $("aTailGuardNote").textContent = "突破后按峰值5%回撤保护";
+      render();
+    }
+
+    async function loadProfile(force=false) {
+      const code = $("code").value.trim();
+      if (!code || (!force && loadedProfileCode === code)) return;
+      const token = accessToken() ? `&token=${encodeURIComponent(accessToken())}` : "";
+      try {
+        const res = await fetch(`${BRIDGE}/api/profile?code=${encodeURIComponent(code)}${force?"&force=1":""}${token}`, {cache:"no-store"});
+        const data = await res.json();
+        if (res.status === 401) throw new Error("需要 Access token");
+        if (!res.ok || !data.ok || !data.profile) {
+          profileStatusText = `发行资料暂未获取：${data.error || res.status}。`;
+          setAutoStatus(`${profileStatusText} 实时字段仍会继续自动更新。`);
+          return;
+        }
+        loadedProfileCode = code;
+        applyProfile(data.profile, data);
+      } catch(e) {
+        profileStatusText = `发行资料获取失败：${e.message}。`;
+        setAutoStatus(profileStatusText);
+      }
+    }
+
+    async function saveTradableProfile() {
+      const code = $("code").value.trim();
+      const sharesWan = num("tradableSharesWan");
+      if (!code || !(sharesWan > 0)) {
+        setAutoStatus("请先填写证券代码和首日实际可交易股数。", false);
+        return;
+      }
+      const currentToken = accessToken();
+      const token = currentToken ? `?token=${encodeURIComponent(currentToken)}` : "";
+      try {
+        const res = await fetch(`${BRIDGE}/api/profile/save${token}`, {
+          method:"POST",
+          cache:"no-store",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({
+            code,
+            issuePrice:num("issuePrice"),
+            firstDayTradableShares:sharesWan * 10000,
+            denominatorSource:$("denominatorSource").value.trim(),
+            denominatorVerified:num("denominatorVerified") === 1,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error || `保存失败 ${res.status}`);
+        loadedProfileCode = "";
+        applyProfile(data.profile, {source:"本地流通盘口径"});
+        setAutoStatus(`已保存 ${code} 的首日流通盘口径；下一次行情刷新将重新计算累计换手。`, true);
+        await refreshQuote(true);
+      } catch (e) {
+        setAutoStatus(`流通盘口径保存失败：${e.message}`);
+      }
+    }
+
+    function applyQuote(q, meta) {
+      const savedSessionDate = localStorage.getItem("bseSessionDate") || currentSessionDate;
+      if (q.sessionDate && savedSessionDate && q.sessionDate !== savedSessionDate) {
+        resetSignalState();
+        previousPrice = null;
+        quoteSampleCount = 0;
+        firstQuoteAt = null;
+        lastQuoteVolume = null;
+        rollingTurnover30 = NaN;
+        openingTurnover30Final = false;
+        turnoverDelta5 = NaN;
+        quoteDataQuality = {confidence:"low", denominatorVerified:false, tqPrimary:false};
+        auctionBookMeta = {captured:false, reliable:false, source:"", capturedAt:""};
+        $("turnover30").value = "";
+        $("auctionRatio").value = "";
+        $("auctionImbalance").value = "";
+        $("auctionBookVerified").value = "0";
+      }
+      if (q.sessionDate) {
+        currentSessionDate = q.sessionDate;
+        localStorage.setItem("bseSessionDate", q.sessionDate);
+      }
+      lastQuoteCapturedAt = q.capturedAt || meta.updatedAt || new Date().toISOString();
+      const localClock = new Date().toLocaleTimeString("zh-CN",{hour12:false});
+      const localMinutes = timeValue(localClock);
+      $("clock").value = localClock;
+      const quoteVolume = Number(Number.isFinite(q.volumeShares) ? q.volumeShares : q.volume);
+      if (localMinutes < 570) {
+        quoteSampleCount = 0;
+        firstQuoteAt = null;
+        lastQuoteVolume = Number.isFinite(quoteVolume) ? quoteVolume : null;
+      } else {
+        const volumeAdvanced = Number.isFinite(quoteVolume)
+          ? lastQuoteVolume === null || quoteVolume > lastQuoteVolume
+          : true;
+        if (volumeAdvanced) {
+          if (!firstQuoteAt) firstQuoteAt = Date.now();
+          quoteSampleCount += 1;
+        }
+        if (Number.isFinite(quoteVolume)) lastQuoteVolume = quoteVolume;
+      }
+      const ageSeconds = Number(meta.ageSeconds);
+      marketHealth = {
+        fresh: !meta.stale && (!Number.isFinite(ageSeconds) || ageSeconds <= 15),
+        ageSeconds: Number.isFinite(ageSeconds) ? ageSeconds : null,
+        failures: Number(meta.consecutiveFailures || 0),
+        source: meta.source || "未知",
+        usingCache: Boolean(meta.usingCache),
+        quality: q.dataQuality?.confidence || "low",
+        phase: q.marketPhase || "unknown",
+        marketTimestamp: q.marketTimestamp || "",
+        frozenReason: q.quoteFreshnessReason || "",
+        quoteFrozen: Boolean(q.quoteFrozen),
+        unchangedSeconds: Number(q.unchangedSeconds || 0)
+      };
+      quoteDataQuality = q.dataQuality || {confidence:"low", denominatorVerified:false, tqPrimary:false};
+      if (q.code) $("code").value = q.code;
+      if (q.name) $("name").value = q.name;
+      if (q.floatMarketValue > 0) $("floatCap").value = (q.floatMarketValue / 1e8).toFixed(2);
+      if (q.firstDayTradableShares > 0) $("tradableSharesWan").value = (q.firstDayTradableShares / 10000).toFixed(2);
+      if (q.denominatorSource) $("denominatorSource").value = q.denominatorSource;
+      if (q.denominatorVerified) $("denominatorVerified").value = "1";
+      if (q.open > 0) $("openPrice").value = q.open.toFixed(2);
+      if (q.price > 0) $("currentPrice").value = q.price.toFixed(2);
+      if (q.high > 0) $("highPrice").value = q.high.toFixed(2);
+      if (q.low > 0) $("lowPrice").value = q.low.toFixed(2);
+      if (q.vwap > 0) $("vwap").value = q.vwap.toFixed(2);
+      if (Number.isFinite(q.turnover)) $("turnover").value = q.turnover.toFixed(1);
+      if (Number.isFinite(q.openingTurnover30)) $("turnover30").value = q.openingTurnover30.toFixed(1);
+      rollingTurnover30 = Number.isFinite(q.rollingTurnover30)
+        ? Number(q.rollingTurnover30)
+        : Number(q.turnover30);
+      openingTurnover30Final = Boolean(q.openingTurnover30Final);
+      turnoverDelta5 = Number.isFinite(q.turnoverDelta5Pct) ? Number(q.turnoverDelta5Pct) : NaN;
+      if (Number.isFinite(q.auctionRatio)) $("auctionRatio").value = q.auctionRatio.toFixed(2);
+      else $("auctionRatio").value = "";
+      if (Number.isFinite(q.auctionOrderBookImbalancePct)) {
+        $("auctionImbalance").value = Number(q.auctionOrderBookImbalancePct).toFixed(1);
+      } else if (marketHealth.source) {
+        $("auctionImbalance").value = "";
+      }
+      auctionBookMeta = {
+        captured:Boolean(q.auctionOrderBookCapturedAt || Number.isFinite(q.auctionOrderBookImbalancePct)),
+        reliable:Boolean(q.auctionOrderBookReliable),
+        source:q.auctionOrderBookReliable ? "TQ五档9:25快照" : "",
+        capturedAt:q.auctionOrderBookCapturedAt || "",
+      };
+      if (marketHealth.source) $("auctionBookVerified").value = q.auctionOrderBookReliable ? "1" : "0";
+      const effectiveShares = q.firstDayTradableShares > 0
+        ? Number(q.firstDayTradableShares)
+        : num("tradableSharesWan") * 10000;
+      const denominatorIsVerified = Boolean(q.denominatorVerified) || num("denominatorVerified") === 1;
+      $("aFloatCap").textContent = q.floatMarketValue > 0 ? `${(q.floatMarketValue / 1e8).toFixed(2)} 亿` : "--";
+      $("aTurnover").textContent = Number.isFinite(q.turnover) ? `${q.turnover.toFixed(1)}%` : "--";
+      $("aTradableShares").textContent = effectiveShares > 0
+        ? `${(effectiveShares / 10000).toFixed(2)} 万股`
+        : "未配置";
+      $("aDenominatorStatus").textContent = denominatorIsVerified
+        ? `已核验｜${q.denominatorSource || $("denominatorSource").value || "本地记录"}`
+        : "未核验，不启用强换手信号";
+      $("aTurnoverDelta5").textContent = Number.isFinite(turnoverDelta5)
+        ? `${turnoverDelta5.toFixed(2)}%`
+        : "采集中";
+      const qualityLabels = {high:"高",medium:"中",low:"低"};
+      $("aDataQuality").textContent = qualityLabels[quoteDataQuality.confidence] || "低";
+      $("aDataQualityNote").textContent = quoteDataQuality.tqPrimary
+        ? (quoteDataQuality.denominatorVerified ? "TQ主源+流通盘已核验" : "TQ主源，但流通盘未核验")
+        : "备用行情源，建议核对通达信";
+      $("aTurnover30").textContent = Number.isFinite(q.openingTurnover30) ? `${q.openingTurnover30.toFixed(1)}%` : "未捕获";
+      $("aTurnover30Note").textContent = Number.isFinite(q.openingTurnover30)
+        ? (q.openingTurnover30Final ? "10:00附近已锁定" : "10:00前实时累计")
+        : "未捕获10:00快照，可手动补充";
+      const marketClosed = marketHealth.phase === "closed";
+      $("aRollingTurnover30").textContent = Number.isFinite(rollingTurnover30)
+        ? `${rollingTurnover30.toFixed(1)}%`
+        : (marketClosed ? "已收盘" : "采集中");
+      $("aRollingTurnover30Note").textContent = Number.isFinite(rollingTurnover30)
+        ? "最近30分钟新增换手"
+        : (marketClosed ? "无完整收盘前30分钟窗口" : `已采集 ${Number(q.turnoverHistoryMinutes || 0).toFixed(1)}/30 分钟`);
+      $("aAuction").textContent = Number.isFinite(q.auctionRatio) ? `${q.auctionRatio.toFixed(2)}%` : "未捕获";
+      $("aAuctionNote").textContent = Number.isFinite(q.auctionRatio)
+        ? `09:25有效成交÷首日流通盘｜${q.checkpoints?.auction_0925?.capturedAt || q.auctionOrderBookCapturedAt || "已确认"}`
+        : (q.auctionCaptured ? "已运行但未取得有效竞价成交量" : "等待9:25有效成交快照");
+      $("aAuctionImbalance").textContent = Number.isFinite(q.auctionOrderBookImbalancePct)
+        ? `${q.auctionOrderBookImbalancePct >= 0 ? "+" : ""}${Number(q.auctionOrderBookImbalancePct).toFixed(1)}%`
+        : "未捕获";
+      $("aAuctionImbalanceNote").textContent = q.auctionOrderBookReliable
+        ? `TQ五档精确快照｜${q.auctionOrderBookCapturedAt || "9:25"}`
+        : "未取得9:25精确TQ五档，禁止触发仓位建议";
+      $("aSource").textContent = marketHealth.source;
+      $("aCache").textContent = marketHealth.usingCache ? "正在使用缓存行情" : (q.crossChecked ? "TQ/腾讯已交叉" : "单一行情源");
+      $("aFreshness").textContent = marketClosed
+        ? "已收盘"
+        : (marketHealth.fresh ? `${Number(marketHealth.ageSeconds || 0).toFixed(1)} 秒` : "延迟/异常");
+      $("aFailures").textContent = String(marketHealth.failures);
+      $("aSessionDate").textContent = q.sessionDate ? `交易日会话 ${q.sessionDate}` : "交易日会话未知";
+      setStatus(
+        marketClosed
+          ? `${marketHealth.source} 已收盘｜交易所末次时间 ${marketHealth.marketTimestamp || "待确认"}。`
+          : marketHealth.fresh
+            ? `${marketHealth.source} 已刷新 ${marketHealth.marketTimestamp || meta.updatedAt || $("clock").value}｜数据可信度${qualityLabels[quoteDataQuality.confidence] || "低"}。`
+            : `${marketHealth.source} 行情延迟或冻结，强提示已暂停。${marketHealth.frozenReason}`,
+        marketHealth.fresh
+      );
+      const floatText = q.floatMarketValue > 0 ? `流通市值 ${(q.floatMarketValue / 1e8).toFixed(2)} 亿` : "流通市值未返回";
+      const turnoverText = Number.isFinite(q.openingTurnover30)
+        ? `开盘30分钟换手 ${q.openingTurnover30.toFixed(1)}%${q.openingTurnover30Final ? "（已锁定）" : "（实时）"}`
+        : "开盘30分钟换手未捕获";
+      const rollingText = Number.isFinite(rollingTurnover30)
+        ? `滚动30分钟新增换手 ${rollingTurnover30.toFixed(1)}%`
+        : `滚动30分钟采集中（${Number(q.turnoverHistoryMinutes || 0).toFixed(1)}/30分钟）`;
+      const auctionText = Number.isFinite(q.auctionRatio)
+        ? `竞价占比 ${q.auctionRatio.toFixed(2)}%`
+        : "竞价占比未捕获";
+      const imbalanceText = Number.isFinite(q.auctionOrderBookImbalancePct)
+        ? `9:25订单失衡 ${Number(q.auctionOrderBookImbalancePct).toFixed(1)}%${q.auctionOrderBookReliable ? "（已核验）" : "（低可信）"}`
+        : "9:25订单失衡未捕获";
+      setAutoStatus(`${profileStatusText} 实时指标：${floatText}；${turnoverText}；${rollingText}；${auctionText}；${imbalanceText}。`, true);
+      render(true);
+    }
+
+    async function refreshQuote(force=false) {
+      const code = $("code").value.trim();
+      if (!code) { setStatus("请先输入北交所证券代码。"); return; }
+      try {
+        setStatus(`正在刷新 ${code}...`,true);
+        await loadProfile(force);
+        const currentToken = accessToken();
+        const token = currentToken ? `&token=${encodeURIComponent(currentToken)}` : "";
+        const res = await fetch(`${BRIDGE}/api/quote?code=${encodeURIComponent(code)}${force?"&force=1":""}${token}`,{cache:"no-store"});
+        const data = await res.json();
+        if (res.status === 401) throw new Error("当前行情服务处于远程安全模式，请填写启动窗口显示的 Access token；或关闭远程服务后运行本地启动脚本");
+        if (!res.ok || !data.ok || !data.quote) {
+          const error = new Error(data.error || `行情异常 ${res.status}`);
+          error.preListing = Boolean(data.preListing);
+          error.listingDate = data.listingDate || currentListingDate;
+          throw error;
+        }
+        applyQuote(data.quote,data);
+      } catch(e) {
+        const message = String(e.message || "");
+        if (e.preListing || message.includes("当前暂无实时成交行情")) {
+          clearMarketState(false);
+          setStatus(message);
+          const listingDate = e.listingDate || currentListingDate || "上市日";
+          setAutoStatus(`${profileStatusText} 上市前暂无实时成交；请在 ${listingDate} 09:20 前启动自动行情。`, true);
+        } else {
+          marketHealth = {
+            ...marketHealth,
+            fresh:false,
+            failures:Number(marketHealth.failures || 0) + 1,
+            usingCache:true
+          };
+          $("aFreshness").textContent = "刷新失败";
+          $("aCache").textContent = "仅保留上次行情，不代表当前价";
+          setStatus(`行情刷新失败：${message}`);
+          render(true);
+        }
+      }
+    }
+
+    function answerQuestion(question) {
+      const text = String(question || "").trim();
+      if (!text) return "请先输入问题，例如“现在可以卖了吗？”";
+      const s = readState();
+      const d = decide(s);
+      const f = forecast(s);
+      const execution = executableSell(s.position, d.ratio);
+      const executionPriceText = execution.qty ? fmtPrice(d.sellPrice) : "未触发";
+      const topReasons = d.reasons.slice(0, 3).map(item => item.text).join("；");
+
+      if (!s.code) return "请先输入证券代码并启动行情刷新，我才能结合当前行情回答。";
+      if (!(s.current > 0) || !(s.open > 0)) return "当前还没有有效的开盘价和实时价格，请等待行情加载后再问。";
+      if (!s.dataFresh && d.haltState !== "halted30" && d.haltState !== "halted60") {
+        return `当前行情可能延迟或正在使用缓存，暂不建议依据软件执行卖出。请先核对券商终端。最近状态：${marketHealth.source || "未知行情源"}。`;
+      }
+
+      if (text.includes("卖") || text.includes("出手") || text.includes("走吗")) {
+        const qtyText = execution.qty ? `${execution.qty}股（实际持仓的${execution.pct.toFixed(0)}%）` : "暂不卖";
+        return `当前结论：${d.grade}。\n${d.nearest}。\n当前最优卖出窗口（模型）：${d.bestWindow}。\n当前执行价：${executionPriceText}；建议数量：${qtyText}；动态保护线：${fmtPrice(d.guard)}。\n剩余仓位：${d.remainingPlan}。\n主要依据：${topReasons || "当前未触发明显风险条件"}。`;
+      }
+      if (text.includes("为什么") || text.includes("原因") || text.includes("依据")) {
+        return `当前属于${scenarioName(d.type)}，风险类型为“${d.riskType}”。\n主要依据：${topReasons || "尚无足够行情依据"}。`;
+      }
+      if (text.includes("价格") || text.includes("目标") || text.includes("多少价") || text.includes("价位")) {
+        const forecastText = f
+          ? `统计参考最高区间 ${fmtPrice(f.high.low)}-${fmtPrice(f.high.high)}，最低区间 ${fmtPrice(f.low.low)}-${fmtPrice(f.low.high)}`
+          : "缺少发行价，无法生成统计区间";
+        return `当前执行价：${executionPriceText}；动态预警/保护线：${fmtPrice(d.guard)}。未产生卖出数量时，保护线不等于委托价。\n${forecastText}。预测采用经验权重模型，不是保证价格。`;
+      }
+      if (text.includes("多少股") || text.includes("数量") || text.includes("仓位")) {
+        if (!execution.qty) return `当前提示为“${d.nearest}”，暂不建议卖出。剩余仓位计划：${d.remainingPlan}。`;
+        return `当前持仓${s.position}股，可执行建议为卖出${execution.qty}股，实际占比${execution.pct.toFixed(0)}%。剩余仓位计划：${d.remainingPlan}。北交所单笔卖出通常不少于100股，不足100股的剩余部分需一次性申报。`;
+      }
+      if (text.includes("等") || text.includes("持有") || text.includes("拿着") || text.includes("继续")) {
+        if (d.grade === "观察") return `目前可以继续观察，但应关注保护价${fmtPrice(d.guard)}和VWAP。当前提示：${d.nearest}。`;
+        return `当前风险等级为“${d.grade}”，不适合只依赖等待反弹。当前提示：${d.nearest}；主要依据：${topReasons}。`;
+      }
+      if (text.includes("临停") || text.includes("停牌") || text.includes("复牌")) {
+        return `当前临停状态：${d.haltState}。30%/60%临停参考价分别为${fmtPrice(d.halt30)}和${fmtPrice(d.halt60)}。当前提示：${d.nearest}。`;
+      }
+      if (text.includes("换手") || text.includes("热度")) {
+        const band = d.turnoverStructure.band || openingTurnoverBandFor(s);
+        const openingText = Number.isFinite(band.value)
+          ? `${band.value.toFixed(1)}%（${band.label}${band.provisional ? "，暂定" : ""}）`
+          : "尚未捕获";
+        const rollingText = Number.isFinite(s.rollingTurnover30)
+          ? `${s.rollingTurnover30.toFixed(1)}%`
+          : "采集中";
+        return `开盘30分钟累计换手：${openingText}；滚动30分钟新增换手：${rollingText}。\n当前量价结构：${d.turnoverStructure.label}。${d.turnoverStructure.note}。\n高换手不单独触发卖出，必须同时观察VWAP、开盘价和价格保持度。`;
+      }
+      if (text.includes("风险") || text.includes("安全吗")) {
+        return `当前风险等级：${d.grade}，风险类型：${d.riskType}。\n主要依据：${topReasons}。\n行情源：${marketHealth.source || "手动输入"}，数据新鲜状态：${s.dataFresh ? "正常" : "异常"}。`;
+      }
+      return `当前综合判断：${d.grade}，${d.nearest}。\n当前最优卖出窗口（模型）：${d.bestWindow}。\n当前执行价${executionPriceText}，动态保护线${fmtPrice(d.guard)}。\n你也可以继续问“为什么”“卖多少股”“目标价是多少”或“还能继续持有吗”。`;
+    }
+
+    function appendQaMessage(text, type) {
+      const item = document.createElement("div");
+      item.className = `qaMessage ${type === "user" ? "qaUser" : "qaAnswer"}`;
+      item.textContent = text;
+      $("qaHistory").appendChild(item);
+      while ($("qaHistory").children.length > 12) $("qaHistory").removeChild($("qaHistory").firstChild);
+      $("qaHistory").scrollTop = $("qaHistory").scrollHeight;
+    }
+
+    function submitQuestion() {
+      const question = $("qaInput").value.trim();
+      if (!question) return;
+      appendQaMessage(question, "user");
+      appendQaMessage(answerQuestion(question), "answer");
+      $("qaInput").value = "";
+    }
+
+    function renderTdxStatus(status) {
+      const processEl = $("tdxProcess");
+      const tqEl = $("tdxReady");
+      processEl.textContent = status.processRunning ? "运行中" : "未运行";
+      processEl.className = status.processRunning ? "tdxGood" : "tdxBad";
+      tqEl.textContent = status.tqReady ? "已就绪" : (status.startupGrace ? "启动保护中" : (status.tqChecking ? "检测中" : "未就绪"));
+      tqEl.className = status.tqReady ? "tdxGood" : "tdxWarn";
+      $("tdxAutostart").textContent = status.autostartEnabled
+        ? `巡检并尝试启动｜${status.autostartWindow || "08:45-09:15"}`
+        : "仅监测｜不自动启动";
+      $("tdxAutostart").className = status.autostartEnabled ? "tdxGood" : "tdxWarn";
+      $("tdxCheckedAt").textContent = status.checkedAt ? status.checkedAt.slice(11,19) : "--";
+      const startButton = $("tdxStartBtn");
+      startButton.textContent = status.processRunning ? "重新检测 TQ" : "尝试启动通达信";
+      if (!status.executableAvailable) {
+        $("tdxStatusNote").textContent = status.tqReady
+          ? "本机TQ中转已连接，云端正在使用TQ盘口与公开行情安全门。"
+          : "云端不能直接启动你电脑上的通达信；未连接TQ中转时使用公开行情，五档竞价强信号保持禁用。";
+      } else if (!status.processRunning) {
+        $("tdxStatusNote").textContent = "通达信未运行。已停止自动拉起，避免产生无界面残留进程；请在电脑上启动并完成登录，页面会自动检测TQ是否恢复。";
+      } else if (!status.tqReady) {
+        $("tdxStatusNote").textContent = status.startupGrace
+          ? `通达信进程已出现，正在等待约${status.startupGraceSeconds || 45}秒完成界面和登录初始化；保护期内不会提前连接TQ。`
+          : `检测到通达信进程，但没有可用TQ行情，不能视为启动成功。请在电脑上确认主界面、登录和TQ策略管理器。${status.tqError ? ` 错误：${status.tqError}` : ""}`;
+      } else {
+        $("tdxStatusNote").textContent = `通达信进程与TQ只读行情均正常，卖出助手可以使用完整盘口数据。${status.lastStartMode === "interactiveScheduledTask" ? " 启动方式：Windows交互桌面任务。" : ""}`;
+      }
+    }
+
+    async function refreshTdxStatus(probe=true) {
+      const query = new URLSearchParams({probe:probe ? "1" : "0"});
+      const token = accessToken();
+      if (token) query.set("token", token);
+      try {
+        const res = await fetch(`${BRIDGE}/api/tdx/status?${query}`, {cache:"no-store"});
+        const data = await res.json();
+        if (!res.ok || !data.ok || !data.status) throw new Error(data.error || `HTTP ${res.status}`);
+        renderTdxStatus(data.status);
+        return data.status;
+      } catch (error) {
+        $("tdxProcess").textContent = "检测失败";
+        $("tdxProcess").className = "tdxBad";
+        $("tdxReady").textContent = "未知";
+        $("tdxReady").className = "tdxWarn";
+        $("tdxStatusNote").textContent = `远程监测失败：${error.message}`;
+        return null;
+      }
+    }
+
+    async function startTdxRemote() {
+      const button = $("tdxStartBtn");
+      const oldText = button.textContent;
+      button.disabled = true;
+      button.textContent = "正在处理…";
+      const token = accessToken();
+      const suffix = token ? `?token=${encodeURIComponent(token)}` : "";
+      try {
+        const res = await fetch(`${BRIDGE}/api/tdx/start${suffix}`, {
+          method:"POST",
+          cache:"no-store",
+          headers:{"Content-Type":"application/json"},
+          body:"{}",
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        $("tdxStatusNote").textContent = data.started
+          ? "已发送尝试启动请求；只有状态变为“TQ已就绪”才算真正成功。若电脑没有出现主界面，请改为本机手动启动。"
+          : "已检测到通达信进程，正在重新检测TQ；仅有进程不代表主界面和登录成功。";
+        for (let attempt=0; attempt<6; attempt++) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const status = await refreshTdxStatus(true);
+          if (status?.processRunning && status?.tqReady) break;
+        }
+      } catch (error) {
+        $("tdxStatusNote").textContent = `远程启动失败：${error.message}`;
+      } finally {
+        button.disabled = false;
+        if (button.textContent === "正在处理…") button.textContent = oldText;
+      }
+    }
+
+    function toggleAuto() {
+      if (timer) { clearInterval(timer); timer=null; $("autoBtn").textContent="启动自动行情"; setStatus("自动行情已停止。"); return; }
+      $("autoBtn").textContent="停止自动行情"; refreshQuote(true); timer=setInterval(()=>refreshQuote(false),5000);
+    }
+
+    $("autoBtn").addEventListener("click",toggleAuto);
+    $("tdxStartBtn").addEventListener("click",startTdxRemote);
+    $("refreshBtn").addEventListener("click",render);
+    $("saveProfileBtn").addEventListener("click",saveTradableProfile);
+    $("qaBtn").addEventListener("click",submitQuestion);
+    $("archiveRefreshBtn").addEventListener("click",loadSignalArchive);
+    $("archiveExportBtn").addEventListener("click",exportSignalArchive);
+    $("archiveChangesOnly").addEventListener("change",loadSignalArchive);
+    $("qaInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        submitQuestion();
+      }
+    });
+    if (/^\d{6}$/.test(URL_CODE)) $("code").value = URL_CODE;
+    $("accessToken").value = URL_TOKEN || localStorage.getItem("bseAccessToken") || "";
+    $("accessToken").addEventListener("change", () => {
+      const value = accessToken();
+      if (value) localStorage.setItem("bseAccessToken", value);
+      else localStorage.removeItem("bseAccessToken");
+    });
+    $("singleLotMode").value = localStorage.getItem("bseSingleLotMode") || "tolerance";
+    $("singleLotMode").addEventListener("change", () => {
+      localStorage.setItem("bseSingleLotMode", $("singleLotMode").value || "tolerance");
+    });
+    $("code").addEventListener("change", () => {
+      loadedProfileCode = "";
+      clearMarketState(true);
+      loadProfile(true);
+    });
+    document.querySelectorAll("input,select,textarea").forEach(el=>el.addEventListener("change",render));
+    const startupProfile = localProfileOverrides[$("code").value.trim()];
+    if (startupProfile) applyProfile(startupProfile, {source:"前端内置核验发行资料"});
+    render();
+    if (location.protocol !== "file:") {
+      refreshTdxStatus(true);
+      tdxTimer = setInterval(()=>refreshTdxStatus(true),20000);
+      if ($("code").value.trim()) toggleAuto();
+    }
+  </script>
+  <script src="/static/pwa.js"></script>
 </body>
 </html>

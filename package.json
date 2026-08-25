@@ -1,12 +1,13 @@
 {
   "name": "bse-ipo-sell-cloud",
-  "version": "1.1.4",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "description": "北交所新股首日卖出窗口助手 PWA 与 Android 客户端",
   "scripts": {
     "web:build": "node scripts/build-mobile.mjs",
     "pwa:check": "node scripts/check-pwa.mjs",
+    "v32:check": "node scripts/check-v32.cjs",
     "android:add": "npm run web:build && cap add android",
     "android:sync": "node scripts/build-mobile.mjs --strict && cap sync android",
     "android:open": "npm run android:sync && cap open android",
