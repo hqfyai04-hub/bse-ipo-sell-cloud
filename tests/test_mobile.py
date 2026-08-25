@@ -40,6 +40,12 @@ def test_token_fragment_is_saved_locally_then_removed_from_address():
     assert 'history.replaceState(null, "", `${location.pathname}${location.search}`)' in app_script
 
 
+def test_position_field_accepts_100_shares_and_odd_lots():
+    index = (STATIC / "index.html").read_text(encoding="utf-8")
+    assert 'id="position"' in index
+    assert 'min="1" step="1" value="100"' in index
+
+
 def test_capacitor_android_configuration_is_current():
     package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
     config = json.loads((ROOT / "capacitor.config.json").read_text(encoding="utf-8"))
