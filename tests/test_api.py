@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from app import main
+from app.market import IpoProfile, MarketDataError
 from app.main import app
 
 
@@ -45,3 +47,50 @@ def test_service_worker_is_root_scoped_and_not_cached():
     assert response.headers["service-worker-allowed"] == "/"
     assert response.headers["cache-control"] == "no-store"
     assert "networkOnly" in response.text
+
+
+def _pending_profile(listing_date=None):
+    return IpoProfile(
+        code="920071",
+        name="金钛股份",
+        issue_price=9.72,
+        issue_pe=13.41,
+        industry_pe=25.29,
+        pe_discount_pct=None,
+        industry=None,
+        main_business=None,
+        listing_date=listing_date,
+        subscription_date="2026-08-19",
+        issue_shares=45_000_000,
+    )
+
+
+def test_pending_ipo_returns_friendly_message(monkeypatch):
+    monkeypatch.setattr(main.market, "profile", lambda code: _pending_profile())
+    monkeypatch.setattr(
+        main.market,
+        "quote",
+        lambda code: (_ for _ in ()).throw(MarketDataError("raw provider failure")),
+    )
+
+    response = client.get("/api/analyze", params={"code": "920071", "position": 100})
+
+    assert response.status_code == 409
+    assert "尚未上市" in response.json()["detail"]
+    assert "raw provider failure" not in response.text
+
+
+def test_future_listing_date_skips_quote(monkeypatch):
+    monkeypatch.setattr(main.market, "profile", lambda code: _pending_profile("2999-08-28"))
+    monkeypatch.setattr(main.market, "quote", lambda code: (_ for _ in ()).throw(AssertionError("quote should not run")))
+
+    response = client.get("/api/analyze", params={"code": "920071"})
+
+    assert response.status_code == 409
+    assert "2999-08-28" in response.json()["detail"]
+
+
+def test_frontend_hides_stale_dashboard_on_error():
+    script = client.get("/static/app.js").text
+    assert "function hideDashboard()" in script
+    assert "if (response.status === 409) clearInterval(state.timer);" in script

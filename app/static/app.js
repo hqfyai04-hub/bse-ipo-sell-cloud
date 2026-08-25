@@ -25,6 +25,9 @@ function setError(message = "") {
   $("error").hidden = !message;
   $("error").textContent = message;
 }
+function hideDashboard() {
+  $("dashboard").hidden = true;
+}
 function listInto(id, items) {
   const list = $(id);
   list.replaceChildren();
@@ -119,12 +122,14 @@ async function refresh() {
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       if (response.status === 401) $("accessBox").open = true;
+      if (response.status === 409) clearInterval(state.timer);
       throw new Error(payload.detail || payload.error || `服务返回 ${response.status}`);
     }
     render(payload);
     const sourceTime = payload.quote?.market_time;
     setLive("active", sourceTime ? `自动刷新 · ${timeText(sourceTime)}` : "自动刷新");
   } catch (error) {
+    hideDashboard();
     setLive("error", "更新失败");
     setError(error.message || "无法读取行情，请稍后重试");
   } finally {
@@ -141,6 +146,7 @@ $("searchForm").addEventListener("submit", (event) => {
   state.position = $("position").value.trim();
   state.lastKey = "";
   state.history = [];
+  hideDashboard();
   history.replaceState(null, "", `?code=${encodeURIComponent(code)}`);
   clearInterval(state.timer);
   refresh();

@@ -125,7 +125,21 @@ def analyze(
     except Exception as exc:
         profile = None
         profile_error = str(exc)
-    quote, fallback_warnings = market.quote(normalized)
+    today = datetime.now(CHINA_TZ).date().isoformat()
+    if profile and profile.listing_date and profile.listing_date > today:
+        raise HTTPException(
+            status_code=409,
+            detail=f"{profile.name or normalized}（{normalized}）尚未上市，上市日期为 {profile.listing_date}。请在上市首日开盘后再判断卖出窗口。",
+        )
+    try:
+        quote, fallback_warnings = market.quote(normalized)
+    except MarketDataError as exc:
+        if profile and not profile.listing_date:
+            raise HTTPException(
+                status_code=409,
+                detail=f"{profile.name or normalized}（{normalized}）尚未上市或上市日期尚未公布，当前没有可用于卖出判断的交易行情。请等待上市公告，并在上市首日开盘后再使用。",
+            ) from exc
+        raise
     decision = engine.analyze(quote, profile, position=position)
     warnings = list(decision.warnings)
     if fallback_warnings:
