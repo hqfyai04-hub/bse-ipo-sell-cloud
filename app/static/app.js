@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const state = { timer: null, busy: false, code: "", position: "", lastKey: "", history: [] };
+const state = { timer: null, busy: false, paused: false, code: "", position: "", lastKey: "", history: [] };
 const API_BASE_URL = String(window.APP_CONFIG?.API_BASE_URL || "").replace(/\/+$/, "");
 
 function apiUrl(path) {
@@ -27,6 +27,17 @@ function setError(message = "") {
 }
 function hideDashboard() {
   $("dashboard").hidden = true;
+}
+function updateRefreshButton() {
+  const button = $("refreshToggleBtn");
+  button.hidden = !state.code;
+  button.textContent = state.paused ? "继续刷新" : "暂停刷新";
+  button.setAttribute("aria-pressed", String(state.paused));
+}
+function scheduleRefresh() {
+  clearInterval(state.timer);
+  state.timer = null;
+  if (!state.paused && state.code) state.timer = setInterval(refresh, 3000);
 }
 function listInto(id, items) {
   const list = $(id);
@@ -106,7 +117,7 @@ function render(data) {
 }
 
 async function refresh() {
-  if (state.busy || !state.code) return;
+  if (state.busy || state.paused || !state.code) return;
   state.busy = true;
   $("startBtn").disabled = true;
   setLive("active", "正在更新");
@@ -122,7 +133,11 @@ async function refresh() {
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       if (response.status === 401) $("accessBox").open = true;
-      if (response.status === 409) clearInterval(state.timer);
+      if (response.status === 409) {
+        state.paused = true;
+        scheduleRefresh();
+        updateRefreshButton();
+      }
       throw new Error(payload.detail || payload.error || `服务返回 ${response.status}`);
     }
     render(payload);
@@ -144,13 +159,27 @@ $("searchForm").addEventListener("submit", (event) => {
   if (code.length !== 6) return setError("请输入 6 位北交所证券代码");
   state.code = code;
   state.position = $("position").value.trim();
+  state.paused = false;
   state.lastKey = "";
   state.history = [];
   hideDashboard();
   history.replaceState(null, "", `?code=${encodeURIComponent(code)}`);
-  clearInterval(state.timer);
+  updateRefreshButton();
   refresh();
-  state.timer = setInterval(refresh, 3000);
+  scheduleRefresh();
+});
+
+$("refreshToggleBtn").addEventListener("click", () => {
+  if (!state.code) return;
+  state.paused = !state.paused;
+  updateRefreshButton();
+  scheduleRefresh();
+  if (state.paused) {
+    setLive("", "已暂停刷新");
+  } else {
+    setLive("active", "正在恢复刷新");
+    refresh();
+  }
 });
 
 $("saveToken").addEventListener("click", () => {
@@ -158,7 +187,7 @@ $("saveToken").addEventListener("click", () => {
   if (value) localStorage.setItem("bseAccessToken", value);
   else localStorage.removeItem("bseAccessToken");
   setError();
-  if (state.code) refresh();
+  if (state.code && !state.paused) refresh();
 });
 
 const launchParams = new URLSearchParams(location.hash.replace(/^#/, ""));
@@ -181,6 +210,6 @@ window.addEventListener("offline", () => {
 });
 window.addEventListener("online", () => {
   setError();
-  if (state.code) refresh();
+  if (state.code && !state.paused) refresh();
   else setLive("", "网络已恢复");
 });

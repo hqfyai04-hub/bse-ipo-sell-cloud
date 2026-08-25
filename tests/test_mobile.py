@@ -46,6 +46,15 @@ def test_position_field_accepts_100_shares_and_odd_lots():
     assert 'min="1" step="1" value="100"' in index
 
 
+def test_refresh_can_be_paused_and_resumed():
+    index = (STATIC / "index.html").read_text(encoding="utf-8")
+    app_script = (STATIC / "app.js").read_text(encoding="utf-8")
+    assert 'id="refreshToggleBtn"' in index
+    assert 'button.textContent = state.paused ? "继续刷新" : "暂停刷新"' in app_script
+    assert "if (state.busy || state.paused || !state.code) return;" in app_script
+    assert 'setLive("", "已暂停刷新")' in app_script
+
+
 def test_capacitor_android_configuration_is_current():
     package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
     config = json.loads((ROOT / "capacitor.config.json").read_text(encoding="utf-8"))

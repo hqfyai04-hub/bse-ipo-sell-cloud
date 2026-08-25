@@ -45,6 +45,9 @@ button { cursor: pointer; }
 .header-actions { display: flex; align-items: center; gap: 14px; }
 .install-button { min-height: 36px; padding: 0 13px; border: 1px solid rgba(76,226,212,.35); border-radius: 9px; background: rgba(76,226,212,.1); color: var(--cyan); font-weight: 760; font-size: 12px; }
 .install-button:hover { background: rgba(76,226,212,.18); }
+.refresh-button { min-height: 36px; padding: 0 13px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); color: var(--text); font-weight: 760; font-size: 12px; }
+.refresh-button:hover { border-color: rgba(76,226,212,.45); }
+.refresh-button[aria-pressed="true"] { color: var(--cyan); border-color: rgba(76,226,212,.45); background: rgba(76,226,212,.1); }
 .live-state { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #617285; }
 .dot.active { background: var(--green); box-shadow: 0 0 0 5px rgba(67, 208, 138, .1); }
@@ -125,7 +128,7 @@ footer { color: #62788c; text-align: center; padding: 0 18px 30px; font-size: 12
 @media (max-width: 560px) {
   main { width: min(100% - 24px, 1120px); }
   .site-header { height: 60px; padding: 0 14px; }
-  .install-button { padding: 0 10px; }
+  .install-button, .refresh-button { padding: 0 10px; }
   .live-state span:last-child { display: none; }
   .hero { padding-top: 38px; }
   h1 { font-size: 39px; }

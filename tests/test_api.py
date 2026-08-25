@@ -93,4 +93,6 @@ def test_future_listing_date_skips_quote(monkeypatch):
 def test_frontend_hides_stale_dashboard_on_error():
     script = client.get("/static/app.js").text
     assert "function hideDashboard()" in script
-    assert "if (response.status === 409) clearInterval(state.timer);" in script
+    assert "if (response.status === 409)" in script
+    assert "state.paused = true;" in script
+    assert "scheduleRefresh();" in script
