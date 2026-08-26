@@ -3120,6 +3120,7 @@
       if (token) query.set("token", token);
       try {
         const res = await fetch(`${BRIDGE}/api/tdx/status?${query}`, {cache:"no-store"});
+        if (res.status === 404) throw new Error("no-tdx-endpoint");
         const ct = res.headers.get("content-type") || "";
         if (!ct.includes("application/json")) throw new Error("no-tdx-endpoint");
         const data = await res.json();
