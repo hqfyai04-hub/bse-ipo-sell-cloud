@@ -331,16 +331,16 @@
 
       <section class="tdxPanel">
         <div class="tdxHeader">
-          <h2>本机 TQ 中转 / 云端数据质量</h2>
-          <button class="primary" id="tdxStartBtn">检查 TQ 中转</button>
+          <h2>云端行情直连状态</h2>
+          <button class="primary" id="tdxStartBtn">重新检测</button>
         </div>
         <div class="tdxGrid">
-          <div class="tdxItem"><span>本机中转连接</span><strong id="tdxProcess">检测中</strong></div>
-          <div class="tdxItem"><span>TQ只读行情</span><strong id="tdxReady">检测中</strong></div>
-          <div class="tdxItem"><span>开盘前巡检模式</span><strong id="tdxAutostart">检测中</strong></div>
+          <div class="tdxItem"><span>后端状态</span><strong id="tdxProcess">检测中</strong></div>
+          <div class="tdxItem"><span>行情数据源</span><strong id="tdxReady">检测中</strong></div>
+          <div class="tdxItem"><span>中转依赖</span><strong id="tdxAutostart">检测中</strong></div>
           <div class="tdxItem"><span>最近检查</span><strong id="tdxCheckedAt">--</strong></div>
         </div>
-        <div id="tdxStatusNote" class="status">正在检查本机通达信进程和TQ行情连接。远程启动只负责拉起软件；若登录状态失效，仍需人工完成登录。</div>
+        <div id="tdxStatusNote" class="status">云端直连模式：实时行情由腾讯公开接口提供，已移除本机 TQ 中转依赖。</div>
       </section>
 
       <section class="autoPanel">
@@ -3097,17 +3097,42 @@
       }
     }
 
+    let cloudDirectMode = false;
+
+    function renderCloudDirect() {
+      const processEl = $("tdxProcess");
+      const tqEl = $("tdxReady");
+      processEl.textContent = "云端直连";
+      processEl.className = "tdxGood";
+      tqEl.textContent = "腾讯公开行情";
+      tqEl.className = "tdxGood";
+      $("tdxAutostart").textContent = "无需本机中转";
+      $("tdxAutostart").className = "tdxGood";
+      $("tdxCheckedAt").textContent = new Date().toLocaleTimeString("zh-CN",{hour12:false});
+      $("tdxStartBtn").textContent = "重新检测";
+      $("tdxStatusNote").textContent = "云端直连模式：实时行情由腾讯公开接口提供，已移除本机 TQ 中转依赖，无需在本机运行通达信。";
+    }
+
     async function refreshTdxStatus(probe=true) {
+      if (cloudDirectMode) return {mode:"cloud"};
       const query = new URLSearchParams({probe:probe ? "1" : "0"});
       const token = accessToken();
       if (token) query.set("token", token);
       try {
         const res = await fetch(`${BRIDGE}/api/tdx/status?${query}`, {cache:"no-store"});
+        const ct = res.headers.get("content-type") || "";
+        if (!ct.includes("application/json")) throw new Error("no-tdx-endpoint");
         const data = await res.json();
         if (!res.ok || !data.ok || !data.status) throw new Error(data.error || `HTTP ${res.status}`);
         renderTdxStatus(data.status);
         return data.status;
       } catch (error) {
+        // 云端版已取消 TQ 中转：后端无此路由时优雅降级为“云端直连”
+        if (String(error.message).includes("no-tdx-endpoint") || error instanceof SyntaxError) {
+          cloudDirectMode = true;
+          renderCloudDirect();
+          return {mode:"cloud"};
+        }
         $("tdxProcess").textContent = "检测失败";
         $("tdxProcess").className = "tdxBad";
         $("tdxReady").textContent = "未知";
@@ -3118,6 +3143,12 @@
     }
 
     async function startTdxRemote() {
+      if (cloudDirectMode) {
+        cloudDirectMode = false;
+        $("tdxStatusNote").textContent = "正在重新检测后端连接…";
+        await refreshTdxStatus(true);
+        return;
+      }
       const button = $("tdxStartBtn");
       const oldText = button.textContent;
       button.disabled = true;
