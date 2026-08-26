@@ -79,8 +79,15 @@ def protect(
 ) -> None:
     client = request.client.host if request.client else "unknown"
     limiter.check(client)
-    if ACCESS_TOKEN and (x_app_token or token or "") != ACCESS_TOKEN:
-        raise HTTPException(status_code=401, detail="需要有效访问口令")
+    if ACCESS_TOKEN:
+        # 配置的白名单来源（如 GitHub Pages）可直接访问，其余请求需携带口令
+        origin = request.headers.get("origin", "") or request.headers.get("referer", "")
+        if origin:
+            normalized = origin.strip().rstrip("/")
+            if any(normalized == allowed or normalized.startswith(allowed + "/") for allowed in ALLOWED_ORIGINS):
+                return
+        if (x_app_token or token or "") != ACCESS_TOKEN:
+            raise HTTPException(status_code=401, detail="需要有效访问口令")
 
 
 @app.middleware("http")
