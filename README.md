@@ -73,7 +73,7 @@ GitHub Pages 只能托管静态文件，无法运行本项目的 Python 行情�
 4. 在 Render 环境变量中设置随机的 `APP_ACCESS_TOKEN`；不设置则网站公开。
 5. 部署完成后访问 Render 分配的 HTTPS 地址。
 
-Render 不依赖 GitHub Actions，连接仓库后即可构建。仓库在 `deploy/github-actions/` 提供 CI、镜像发布和 APK 构建模板；启用后，每次推送 `main` 都会运行测试和 Docker 构建，创建 `v1.1.0` 之类的 Git tag 可把镜像发布到 GitHub Container Registry。
+Render 不依赖 GitHub Actions，连接仓库后即可构建。CI 已在 `.github/workflows/` 启用：`tests.yml` 在每次推送 `main` 和 PR 时运行 pytest；`publish-image.yml` 在创建 `v1.1.0` 之类的 Git tag 时把镜像发布到 GitHub Container Registry。
 
 `render.yaml` 同时声明 Render Postgres，并把 `DATABASE_URL` 自动注入 Web Service。Render 免费 Web Service 的文件系统是临时的，容器内 SQLite 会在重启后丢失。免费 Render Postgres 可以验证功能，但官方限制为创建 30 天后到期且没有备份；长期实盘存档应升级数据库或改接其他长期 PostgreSQL。
 
@@ -107,18 +107,14 @@ npm run android:debug
 android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-本地构建需要 Node.js 22+、JDK 21、Android Studio 与 Android SDK。也可在 GitHub Actions 中手动构建：启用 `deploy/github-actions/android-apk.yml` 后，运行 **Build Android APK**，输入后端 HTTPS 地址，再从该次任务的 Artifacts 下载 `bse-ipo-sell-debug-apk`。
+本地构建需要 Node.js 22+、JDK 21、Android Studio 与 Android SDK。APK 构建目前为本地流程（仓库未内置对应的 GitHub Actions 模板）。
 
 首次打开 App 时，如果云端配置了 `APP_ACCESS_TOKEN`，在页面“访问口令”中输入即可；口令只保存在手机本地。正式对外分发应在 Android Studio 中配置自己的签名，生成签名版 AAB/APK，不能用调试签名上架。
 
-当前 GitHub OAuth 令牌没有 `workflow` scope 时，GitHub 会拒绝直接推送 `.github/workflows`。重新授权后可一次性启用 CI、镜像发布和 APK 构建模板：
+推送 `.github/workflows` 下的文件需要令牌带 `workflow` scope。若 `git push` 被 GitHub 拒绝，先补权：
 
 ```powershell
 gh auth refresh -h github.com -s workflow
-New-Item -ItemType Directory -Force .github/workflows
-git mv deploy/github-actions/*.yml .github/workflows/
-git commit -m "Enable GitHub Actions"
-git push
 ```
 
 ## 其他云平台
