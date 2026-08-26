@@ -1,0 +1,48 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "www/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject base href for project subpath
+        working-directory: www
+        run: |
+          # GitHub Pages 项目站点位于 /bse-ipo-sell-cloud/ 子路径下，
+          # 而前端资源使用绝对路径 /static/...，需注入 <base> 才能正确解析。
+          # 仅作用于部署副本，不改源码（本地与 Render 部署不受此影响）。
+          if ! grep -q 'base href' index.html; then
+            sed -i 's#<head>#<head>\n  <base href="/bse-ipo-sell-cloud/">#' index.html
+          fi
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: www
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
