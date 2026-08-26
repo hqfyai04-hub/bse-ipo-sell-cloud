@@ -32,6 +32,8 @@ ALLOWED_ORIGINS = {
         if origin.strip()
     ),
 }
+# 完全公开模式（无访问口令）下，CORS 直接放行所有来源，避免环境变量未生效导致前端跨域失败
+CORS_ORIGINS = ["*"] if not ACCESS_TOKEN else sorted(ALLOWED_ORIGINS)
 
 app = FastAPI(
     title="北交所新股首日卖出窗口助手",
@@ -41,7 +43,7 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=sorted(ALLOWED_ORIGINS),
+    allow_origins=CORS_ORIGINS,
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "X-App-Token"],
