@@ -463,7 +463,22 @@
   <script src="/static/app-config.js"></script>
   <script>
     const $ = id => document.getElementById(id);
-    const BRIDGE = String(window.APP_CONFIG?.API_BASE_URL || (location.protocol.startsWith("http") ? location.origin : "http://127.0.0.1:8765")).replace(/\/$/, "");
+    const API_BASE_URL_RAW = String(window.APP_CONFIG?.API_BASE_URL || "").trim();
+    const BRIDGE = API_BASE_URL_RAW ? API_BASE_URL_RAW.replace(/\/$/, "") : (location.protocol.startsWith("http") ? location.origin : "");
+    async function safeJson(res, label) {
+      const text = await res.text();
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        throw new Error(`${label || "接口"}未返回 JSON（后端未连接或地址未配置）`);
+      }
+      try { return JSON.parse(text); } catch { throw new Error(`${label || "接口"}返回的不是有效 JSON`); }
+    }
+    if (!API_BASE_URL_RAW && location.hostname.endsWith("github.io")) {
+      document.addEventListener("DOMContentLoaded", () => {
+        const el = document.getElementById("autoStatus");
+        if (el) el.textContent = "此页面是纯静态前端，尚未连接云端后端，无法获取实时行情；部署后端并设置 APP_API_BASE_URL 后即可显示真实数据。";
+      });
+    }
     const URL_PARAMS = new URLSearchParams(location.search);
     const HASH_PARAMS = new URLSearchParams(location.hash.replace(/^#/, ""));
     const URL_TOKEN = URL_PARAMS.get("token") || HASH_PARAMS.get("token") || "";
@@ -2731,7 +2746,7 @@
       const token = accessToken() ? `&token=${encodeURIComponent(accessToken())}` : "";
       try {
         const res = await fetch(`${BRIDGE}/api/profile?code=${encodeURIComponent(code)}${force?"&force=1":""}${token}`, {cache:"no-store"});
-        const data = await res.json();
+        const data = await safeJson(res, "发行资料");
         if (res.status === 401) throw new Error("需要 Access token");
         if (!res.ok || !data.ok || !data.profile) {
           profileStatusText = `发行资料暂未获取：${data.error || res.status}。`;
@@ -2949,7 +2964,7 @@
         const currentToken = accessToken();
         const token = currentToken ? `&token=${encodeURIComponent(currentToken)}` : "";
         const res = await fetch(`${BRIDGE}/api/quote?code=${encodeURIComponent(code)}${force?"&force=1":""}${token}`,{cache:"no-store"});
-        const data = await res.json();
+        const data = await safeJson(res, "行情");
         if (res.status === 401) throw new Error("当前行情服务处于远程安全模式，请填写启动窗口显示的 Access token；或关闭远程服务后运行本地启动脚本");
         if (!res.ok || !data.ok || !data.quote) {
           const error = new Error(data.error || `行情异常 ${res.status}`);

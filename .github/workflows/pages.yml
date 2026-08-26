@@ -30,7 +30,9 @@ jobs:
 
       - name: Build PWA (www/) from app/static
         # build-mobile.mjs 仅用 Node 内置模块，无需 npm install。
-        # 可选：设置 APP_API_BASE_URL 让线上前端直连已部署的后端（如 Render），从而显示实时行情。
+        # APP_API_BASE_URL 来自仓库 Secret：指向已部署的后端（如 Render 或本机经隧道的公网地址），让线上前端显示实时行情。
+        env:
+          APP_API_BASE_URL: ${{ secrets.APP_API_BASE_URL }}
         run: node scripts/build-mobile.mjs
 
       - name: Inject base href for project subpath

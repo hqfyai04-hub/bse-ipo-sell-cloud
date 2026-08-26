@@ -16,16 +16,7 @@
 - 临停/复牌保护、100 股容错/收益优先模式、个股专案和目标价量价确认；
 - 九个固定时点快照、完整判断存档、关键变化标记和 CSV 导出。
 
-云端默认使用腾讯/东方财富公开行情。公开源没有可靠的 9:25 五档盘口，因此相关强信号会保持禁用，不能把低可信数据伪装成 TQ。需要完整盘口时，可在已登录通达信/TQ 的 Windows 电脑上运行可选中转：
-
-```powershell
-python scripts/relay_tq_to_cloud.py --code 920071 `
-  --cloud https://bse-ipo-sell-cloud.onrender.com `
-  --token 你的云端口令 `
-  --local http://127.0.0.1:8765
-```
-
-中转脚本只有在本地接口明确报告 `tqPrimary=true` 时才上传，且云端拒绝超过 60 秒的行情。
+云端默认使用腾讯/东方财富公开行情（直连，不经本机 TQ 中转）。公开源没有可靠的 9:25 五档盘口，因此相关强信号会保持禁用，不能把低可信数据伪装成 TQ。
 
 ## 与旧版的区别
 
@@ -144,7 +135,6 @@ gh auth refresh -h github.com -s workflow
 - `GET /api/metrics?code=920xxx`
 - `POST /api/signal-event`
 - `GET /api/signal-events?code=920xxx&date=YYYY-MM-DD`
-- `POST /api/relay/quote`（可选本机 TQ 中转）
 - 若设置访问口令，使用请求头 `X-App-Token`，页面会把口令保存在当前浏览器的 `localStorage` 中。
 
 ## 数据与风险边界

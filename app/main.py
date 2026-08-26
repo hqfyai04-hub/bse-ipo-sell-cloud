@@ -49,8 +49,6 @@ app.add_middleware(
 market = MarketClient()
 engine = SellWindowEngine()
 store = CloudMarketStore()
-relay_quotes: dict[str, tuple[datetime, dict]] = {}
-relay_lock = threading.RLock()
 
 
 class RateLimiter:
@@ -139,7 +137,7 @@ def _profile_payload(profile, saved: dict | None = None) -> dict | None:
         "denominatorVerified": bool(saved.get("denominatorVerified")),
         "firstDayUnlock": None,
         "industryHeat": 1,
-        "notes": "首日流通盘和竞价盘口只有在公告或TQ中转核验后才参与强卖出判断。",
+        "notes": "首日流通盘以发行公告为准；行情由云端数据接口直接获取。",
     }
 
 
@@ -160,14 +158,6 @@ def _market_phase(now: datetime) -> str:
     return "closed"
 
 
-def _relay_quote(code: str) -> dict | None:
-    with relay_lock:
-        item = relay_quotes.get(code)
-    if not item or (datetime.now(CHINA_TZ) - item[0]).total_seconds() > 15:
-        return None
-    return dict(item[1])
-
-
 def _full_quote_payload(code: str, *, force: bool = False) -> tuple[dict, list[str]]:
     del force
     normalized = normalize_code(code)
@@ -185,25 +175,19 @@ def _full_quote_payload(code: str, *, force: bool = False) -> tuple[dict, list[s
             detail=f"{normalized} 将于 {listing_date} 上市，当前暂无实时成交行情",
         )
 
-    relay = _relay_quote(normalized)
     warnings: list[str] = []
     now = datetime.now(CHINA_TZ)
-    if relay:
-        row = relay
-        row["source"] = str(row.get("source") or "TdxQuantRelay")
-        market_timestamp = str(row.get("marketTimestamp") or row.get("capturedAt") or now.isoformat())
-    else:
-        quote, warnings = market.quote(normalized)
-        row = {
-            "code": quote.code, "name": quote.name, "price": quote.price,
-            "open": quote.open, "high": quote.high, "low": quote.low,
-            "previousClose": quote.previous_close, "vwap": quote.vwap,
-            "turnover": quote.turnover_pct, "volumeShares": quote.volume_shares,
-            "amountYuan": quote.amount_yuan, "floatMarketValue": quote.float_market_value,
-            "marketTimestamp": quote.market_time.isoformat() if quote.market_time else None,
-            "source": quote.source,
-        }
-        market_timestamp = str(row.get("marketTimestamp") or "")
+    quote, warnings = market.quote(normalized)
+    row = {
+        "code": quote.code, "name": quote.name, "price": quote.price,
+        "open": quote.open, "high": quote.high, "low": quote.low,
+        "previousClose": quote.previous_close, "vwap": quote.vwap,
+        "turnover": quote.turnover_pct, "volumeShares": quote.volume_shares,
+        "amountYuan": quote.amount_yuan, "floatMarketValue": quote.float_market_value,
+        "marketTimestamp": quote.market_time.isoformat() if quote.market_time else None,
+        "source": quote.source,
+    }
+    market_timestamp = str(row.get("marketTimestamp") or "")
 
     captured_at = now
     recorded = store.record_snapshot(row, captured_at)
@@ -225,7 +209,7 @@ def _full_quote_payload(code: str, *, force: bool = False) -> tuple[dict, list[s
     age = max(0.0, (now - source_time).total_seconds()) if source_time else None
     stale = _live_session(minute) and (age is None or age > 20)
     denominator_verified = bool(recorded.get("denominatorVerified"))
-    tq_primary = str(recorded.get("source") or "").startswith("TdxQuant")
+    tq_primary = False  # 已取消本机TQ中转；云端直连行情无 TQ 核验
     confidence = "high" if tq_primary and denominator_verified and not stale else ("medium" if denominator_verified and not stale else "low")
     recorded.update({
         "turnover": custom_turnover if custom_turnover is not None else recorded.get("turnover"),
@@ -339,42 +323,7 @@ def strategy_config() -> dict:
     return {"ok": True, "source": "V3.2全样本参数", "parameters": json.loads(path.read_text(encoding="utf-8"))}
 
 
-@app.post("/api/relay/quote", dependencies=[Depends(protect)])
-def relay_quote(payload: dict = Body(...)) -> dict:
-    code = normalize_code(str(payload.get("code") or ""))
-    timestamp = str(payload.get("marketTimestamp") or payload.get("capturedAt") or "")
-    try:
-        captured = datetime.fromisoformat(timestamp.replace("Z", "+00:00")).astimezone(CHINA_TZ)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail="TQ中转行情必须包含有效 marketTimestamp") from exc
-    if abs((datetime.now(CHINA_TZ) - captured).total_seconds()) > 60:
-        raise HTTPException(status_code=400, detail="拒绝超过60秒的TQ中转行情")
-    cleaned = dict(payload)
-    cleaned.update({"code": code, "source": "TdxQuantRelay", "marketTimestamp": captured.isoformat()})
-    with relay_lock:
-        relay_quotes[code] = (datetime.now(CHINA_TZ), cleaned)
-    return {"ok": True, "acceptedAt": datetime.now(CHINA_TZ).isoformat(timespec="seconds")}
-
-
-@app.get("/api/tdx/status", dependencies=[Depends(protect)])
-def relay_status(probe: int = Query(default=0)) -> dict:
-    del probe
-    now = datetime.now(CHINA_TZ)
-    with relay_lock:
-        recent = [(code, item) for code, item in relay_quotes.items() if (now - item[0]).total_seconds() <= 15]
-    ready = bool(recent)
-    return {"ok": True, "status": {
-        "processRunning": ready, "tqReady": ready, "tqChecking": False,
-        "autostartEnabled": False, "autostartWindow": "云端不启动本机软件",
-        "checkedAt": now.isoformat(timespec="seconds"), "executableAvailable": False,
-        "tqError": "等待本机TQ中转" if not ready else "", "startupGrace": False,
-    }}
-
-
-@app.post("/api/tdx/start", dependencies=[Depends(protect)])
-def relay_start() -> JSONResponse:
-    return JSONResponse(status_code=409, content={"ok": False, "error": "云端不能启动你电脑上的通达信；请启动可选的本机TQ中转。"})
-
+# 本机 TQ 中转已取消：行情改由 market.py 直连云端（东方财富/腾讯）获取，见 /api/quote。
 
 @app.get("/api/analyze", dependencies=[Depends(protect)])
 def analyze(
