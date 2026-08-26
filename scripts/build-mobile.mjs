@@ -28,9 +28,15 @@ await writeFile(resolve(outputDir, "static", "app-config.js"), config, "utf8");
 
 const indexPath = resolve(outputDir, "index.html");
 const index = await readFile(indexPath, "utf8");
-if (!index.includes("/static/app-config.js")) {
+if (!index.includes("static/app-config.js")) {
   throw new Error("index.html 缺少 app-config.js，无法注入云端地址。");
 }
+// 给 app-config.js 加版本戳，强制浏览器在重新部署后拉取最新 API_BASE_URL，避免缓存旧地址导致“后端未连接”
+const versionedIndex = index.replace(
+  /static\/app-config\.js(?!\?v=)/g,
+  `static/app-config.js?v=${Date.now()}`,
+);
+await writeFile(indexPath, versionedIndex, "utf8");
 
 console.log(
   apiBaseUrl

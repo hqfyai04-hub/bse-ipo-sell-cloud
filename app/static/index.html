@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#1f5fd5">
   <meta name="mobile-web-app-capable" content="yes">
   <title>北交所新股首日卖出助手 V3.2</title>
-  <link rel="manifest" href="/static/manifest.webmanifest">
-  <link rel="icon" href="/static/icons/icon-192.png" sizes="192x192">
+  <link rel="manifest" href="static/manifest.webmanifest">
+  <link rel="icon" href="static/icons/icon-192.png" sizes="192x192">
   <style>
     :root {
       --bg: #f3f5f8; --panel: #fff; --line: #d9e1e9; --text: #172235;
@@ -460,7 +460,7 @@
     </div>
   </main>
 
-  <script src="/static/app-config.js"></script>
+  <script src="static/app-config.js"></script>
   <script>
     const $ = id => document.getElementById(id);
     const API_BASE_URL_RAW = String(window.APP_CONFIG?.API_BASE_URL || "").trim();
@@ -3226,6 +3226,6 @@
       if ($("code").value.trim()) toggleAuto();
     }
   </script>
-  <script src="/static/pwa.js"></script>
+  <script src="static/pwa.js"></script>
 </body>
 </html>
