@@ -60,15 +60,16 @@ pytest -q
 
 GitHub Pages 只能托管静态文件，无法运行本项目的 Python 行情代理与状态机。因此推荐把源码和镜像放在 GitHub，运行服务部署到 Render：
 
-1. 在 GitHub 新建空仓库 `bse-ipo-sell-cloud`，将本目录推送到 `main`。
-2. 登录 Render，选择 **New → Blueprint**，连接这个 GitHub 仓库。
-3. Render 会读取 `render.yaml` 和 `Dockerfile` 自动创建 Web Service。
-4. 在 Render 环境变量中设置随机的 `APP_ACCESS_TOKEN`；不设置则网站公开。
-5. 部署完成后访问 Render 分配的 HTTPS 地址。
+1. 仓库已推送到 GitHub `hqfyai04-hub/bse-ipo-sell-cloud`（public）。
+2. 打开 Render Blueprint 部署深链，连接这个 GitHub 仓库并创建服务：
+   `https://dashboard.render.com/new/blueprint?repo=https://github.com/hqfyai04-hub/bse-ipo-sell-cloud`
+3. Render 读取 `render.yaml` + `Dockerfile` 自动创建 Web Service（`region: singapore`，免费套餐）。
+4. `APP_ALLOWED_ORIGINS` 已写死为 `https://hqfyai04-hub.github.io`（github.io 前端跨域必需）；可选设置 `APP_ACCESS_TOKEN`，不设置则网站公开只读（仅保留限流）。
+5. 部署完成后访问 Render 分配的 HTTPS 地址（形如 `https://bse-ipo-sell-cloud.onrender.com`），把该地址告诉我，我来更新 Pages 的 `APP_API_BASE_URL` 并重新部署前端。
 
-Render 不依赖 GitHub Actions，连接仓库后即可构建。CI 已在 `.github/workflows/` 启用：`tests.yml` 在每次推送 `main` 和 PR 时运行 pytest；`publish-image.yml` 在创建 `v1.1.0` 之类的 Git tag 时把镜像发布到 GitHub Container Registry。
+Render 不依赖 GitHub Actions，连接仓库后每次推送 `main` 自动重新部署。CI 已在 `.github/workflows/` 启用：`tests.yml` 在每次推送 `main` 和 PR 时运行 pytest；`publish-image.yml` 在创建 `v1.1.0` 之类的 Git tag 时把镜像发布到 GitHub Container Registry。
 
-`render.yaml` 同时声明 Render Postgres，并把 `DATABASE_URL` 自动注入 Web Service。Render 免费 Web Service 的文件系统是临时的，容器内 SQLite 会在重启后丢失。免费 Render Postgres 可以验证功能，但官方限制为创建 30 天后到期且没有备份；长期实盘存档应升级数据库或改接其他长期 PostgreSQL。
+`render.yaml` **不再声明 Postgres**：未设置 `DATABASE_URL` 时 `store` 自动降级到临时 SQLite，足够这个无状态取行情 + 状态机工具使用。免费 Render Web Service 文件系统是临时的，SQLite 数据在重启后丢失（不影响实时行情与决策）；如需长期存档再挂 PostgreSQL。
 
 ## 安装到 Android 手机
 
