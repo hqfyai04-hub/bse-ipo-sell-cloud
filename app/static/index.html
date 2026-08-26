@@ -3128,26 +3128,17 @@
         renderTdxStatus(data.status);
         return data.status;
       } catch (error) {
-        // 云端版已取消 TQ 中转：后端无此路由时优雅降级为“云端直连”
-        if (String(error.message).includes("no-tdx-endpoint") || error instanceof SyntaxError) {
-          cloudDirectMode = true;
-          renderCloudDirect();
-          return {mode:"cloud"};
-        }
-        $("tdxProcess").textContent = "检测失败";
-        $("tdxProcess").className = "tdxBad";
-        $("tdxReady").textContent = "未知";
-        $("tdxReady").className = "tdxWarn";
-        $("tdxStatusNote").textContent = `远程监测失败：${error.message}`;
-        return null;
+        // 云端版已取消 TQ 中转：后端无此路由 / 网络不可达 / 跨域失败 时，统一优雅降级为“云端直连”
+        cloudDirectMode = true;
+        renderCloudDirect();
+        return {mode:"cloud"};
       }
     }
 
     async function startTdxRemote() {
       if (cloudDirectMode) {
-        cloudDirectMode = false;
-        $("tdxStatusNote").textContent = "正在重新检测后端连接…";
-        await refreshTdxStatus(true);
+        // 云端直连模式无本机 TQ 可启动：仅刷新状态展示，不发起无谓请求
+        renderCloudDirect();
         return;
       }
       const button = $("tdxStartBtn");
