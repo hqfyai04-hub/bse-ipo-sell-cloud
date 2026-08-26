@@ -219,7 +219,8 @@ def _full_quote_payload(code: str, *, force: bool = False) -> tuple[dict, list[s
     stale = _live_session(minute) and (age is None or age > 20)
     denominator_verified = bool(recorded.get("denominatorVerified"))
     tq_primary = False  # 已取消本机TQ中转；云端直连行情无 TQ 核验
-    confidence = "high" if tq_primary and denominator_verified and not stale else ("medium" if denominator_verified and not stale else "low")
+    # 云端直连模式下，可信度以“数据是否新鲜 + 流通盘分母是否核验”为准，不再强制要求已移除的 TQ 主源
+    confidence = "high" if denominator_verified and not stale else ("medium" if not stale else "low")
     recorded.update({
         "turnover": custom_turnover if custom_turnover is not None else recorded.get("turnover"),
         "openingTurnover30": opening30,
