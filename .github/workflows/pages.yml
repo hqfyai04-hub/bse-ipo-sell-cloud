@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "www/**"
+      - "app/static/**"
+      - "scripts/build-mobile.mjs"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -23,14 +24,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build PWA (www/) from app/static
+        # build-mobile.mjs 仅用 Node 内置模块，无需 npm install。
+        # 可选：设置 APP_API_BASE_URL 让线上前端直连已部署的后端（如 Render），从而显示实时行情。
+        run: node scripts/build-mobile.mjs
+
       - name: Inject base href for project subpath
-        working-directory: www
         run: |
           # GitHub Pages 项目站点位于 /bse-ipo-sell-cloud/ 子路径下，
-          # 而前端资源使用绝对路径 /static/...，需注入 <base> 才能正确解析。
-          # 仅作用于部署副本，不改源码（本地与 Render 部署不受此影响）。
-          if ! grep -q 'base href' index.html; then
-            sed -i 's#<head>#<head>\n  <base href="/bse-ipo-sell-cloud/">#' index.html
+          # 前端资源使用绝对路径 /static/...，需注入 <base> 才能正确解析。
+          # 仅作用于 CI 产物，不改源码（本地与 Render 部署不受影响）。
+          if ! grep -q 'base href' www/index.html; then
+            sed -i 's#<head>#<head>\n  <base href="/bse-ipo-sell-cloud/">#' www/index.html
           fi
 
       - uses: actions/upload-pages-artifact@v3
