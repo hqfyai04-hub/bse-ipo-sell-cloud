@@ -219,6 +219,15 @@ def _full_quote_payload(code: str, *, force: bool = False) -> tuple[dict, list[s
     stale = _live_session(minute) and (age is None or age > 20)
     denominator_verified = bool(recorded.get("denominatorVerified"))
     tq_primary = False  # 已取消本机TQ中转；云端直连行情无 TQ 核验
+    # 云端直连：若未配置首日流通盘，则用「成交量 / 交易所换手率」反推（交易所换手率=成交量/首日流通盘，代数精确），
+    # 作为未核验的自动分母，让换手口径始终参与强卖出判断；用户录入公告值可覆盖并升级为高可信度。
+    denominator_auto = False
+    if not recorded.get("firstDayTradableShares") and quote.volume_shares and quote.turnover_pct and quote.turnover_pct >= 0.5:
+        auto_shares = int(round(quote.volume_shares / (quote.turnover_pct / 100.0)))
+        if auto_shares > 0:
+            recorded["firstDayTradableShares"] = auto_shares
+            recorded["denominatorSource"] = (recorded.get("denominatorSource") or "") or "行情交叉反推（未核验）"
+            denominator_auto = True
     # 云端直连模式下，可信度以“数据是否新鲜 + 流通盘分母是否核验”为准，不再强制要求已移除的 TQ 主源
     confidence = "high" if denominator_verified and not stale else ("medium" if not stale else "low")
     recorded.update({
@@ -239,6 +248,7 @@ def _full_quote_payload(code: str, *, force: bool = False) -> tuple[dict, list[s
             "tqPrimary": tq_primary, "volumeNormalizedToShares": recorded.get("volumeShares") is not None,
             "denominatorReady": bool(recorded.get("firstDayTradableShares")),
             "denominatorVerified": denominator_verified, "denominatorSource": recorded.get("denominatorSource") or "",
+            "denominatorAuto": denominator_auto,
             "persistent": store.persistent, "historicalTickAvailable": False,
             "auctionCaptured": "auction_0925" in checkpoints,
         },

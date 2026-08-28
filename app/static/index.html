@@ -528,7 +528,7 @@
     let rollingTurnover30 = NaN;
     let openingTurnover30Final = false;
     let turnoverDelta5 = NaN;
-    let quoteDataQuality = {confidence:"low", denominatorVerified:false, tqPrimary:false};
+    let quoteDataQuality = {confidence:"low", denominatorVerified:false, denominatorAuto:false, tqPrimary:false};
     let auctionBookMeta = {captured:false, reliable:false, source:"", capturedAt:""};
     let lastQuoteCapturedAt = "";
     let lastArchivedCapturedAt = "";
@@ -791,6 +791,7 @@
         rollingTurnover30, openingTurnover30Final, turnoverDelta5,
         tradableShares: num("tradableSharesWan") * 10000,
         denominatorVerified: num("denominatorVerified") === 1,
+        denominatorAuto: Boolean(quoteDataQuality.denominatorAuto),
         turnoverVerified: Boolean(quoteDataQuality.denominatorVerified) || num("denominatorVerified") === 1,
         dataQuality: quoteDataQuality.confidence || "low",
         auctionRatio: optionalNum("auctionRatio"),
@@ -1458,10 +1459,12 @@
       if (!(s.issue > 0)) add("warn", "发行价缺失，开盘涨幅与情景分类精度下降。", 15, -8);
       if (!(s.open > 0) || !(s.current > 0)) add("warn", "等待集合竞价或实时行情。", 8, -4);
       if (!(s.floatCap > 0)) add("warn", "流通市值缺失，A/B 类判断暂以开盘涨幅为主。", 4, 0);
-      if (!(s.tradableShares > 0)) {
-        add("warn", "首日实际可交易股数未配置：当前换手口径不参与强卖出判断。", 2, 0);
+      if (!(s.tradableShares > 0) && !s.denominatorAuto) {
+        add("warn", "首日实际可交易股数未配置：换手口径暂以交易所首日口径参与判断，建议录入公告流通盘以升级可信度。", 2, 0);
+      } else if (s.denominatorAuto && !s.denominatorVerified) {
+        add("info", `首日流通盘由行情反推≈${(s.tradableShares / 10000).toFixed(2)}万股（未核验）：换手口径已按交易所首日口径参与强卖出判断；录入公告流通盘可升级为高可信度。`, 0, 1);
       } else if (!s.denominatorVerified) {
-        add("warn", `已录入首日流通盘 ${(s.tradableShares / 10000).toFixed(2)} 万股，但尚未按上市公告核验。`, 2, 0);
+        add("warn", `已录入首日流通盘 ${(s.tradableShares / 10000).toFixed(2)} 万股，但尚未按上市公告核验，强换手信号仍按交易所首日口径启用。`, 2, 0);
       } else {
         add("good", `首日流通盘 ${(s.tradableShares / 10000).toFixed(2)} 万股已核验，自定义累计换手口径生效。`, -2, 2);
       }
@@ -2670,7 +2673,7 @@
         : "未配置";
       $("aDenominatorStatus").textContent = profile.denominatorVerified
         ? `已核验｜${profile.denominatorSource || "本地记录"}`
-        : "未核验，不启用强换手信号";
+        : "未核验：强换手信号按交易所首日口径启用，公告值可升级可信度";
       const peText = profile.issuePe > 0 && profile.industryPe > 0
         ? `发行PE ${Number(profile.issuePe).toFixed(2)} / 行业PE ${Number(profile.industryPe).toFixed(2)}`
         : "PE资料未完整返回";
@@ -2853,7 +2856,8 @@
       if (q.code) $("code").value = q.code;
       if (q.name) $("name").value = q.name;
       if (q.floatMarketValue > 0) $("floatCap").value = (q.floatMarketValue / 1e8).toFixed(2);
-      if (q.firstDayTradableShares > 0) $("tradableSharesWan").value = (q.firstDayTradableShares / 10000).toFixed(2);
+      // 仅当输入框为空时自动填入（行情反推的）首日流通盘，绝不覆盖用户手动录入
+      if (q.firstDayTradableShares > 0 && !num("tradableSharesWan")) $("tradableSharesWan").value = (q.firstDayTradableShares / 10000).toFixed(2);
       if (q.denominatorSource) $("denominatorSource").value = q.denominatorSource;
       if (q.denominatorVerified) $("denominatorVerified").value = "1";
       if (q.open > 0) $("openPrice").value = q.open.toFixed(2);
@@ -2893,7 +2897,7 @@
         : "未配置";
       $("aDenominatorStatus").textContent = denominatorIsVerified
         ? `已核验｜${q.denominatorSource || $("denominatorSource").value || "本地记录"}`
-        : "未核验，不启用强换手信号";
+        : (q.denominatorAuto ? "行情反推未核验：强换手信号已按交易所首日口径启用" : "未核验：强换手信号按交易所首日口径启用，公告值可升级可信度");
       $("aTurnoverDelta5").textContent = Number.isFinite(turnoverDelta5)
         ? `${turnoverDelta5.toFixed(2)}%`
         : "采集中";
